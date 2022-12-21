@@ -7,3 +7,4 @@ sentencepiece/m.model
 sentencepiece/m.vocab
 morph_db
 stats
+.idea/
