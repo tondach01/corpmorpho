@@ -1,0 +1,9 @@
+desam/train_desam
+desam/test_desam
+desam/tune_desam
+desam/prevert_desam
+desam/desam_text.txt
+sentencepiece/m.model
+sentencepiece/m.vocab
+morph_db
+stats
