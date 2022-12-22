@@ -28,14 +28,23 @@ def paradigm_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str = 
 def suffix_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str) -> Dict[str, int]:
     """Computes frequencies of paradigms containing given suffix (not only in lemma)"""
     freqs = dict()
+    non_matching = set()
     for lemma in lemmas(corpus):
         if lemma not in morph_db.vocab.keys():
             continue
         paradigm = morph_db.vocab[lemma]
+        if paradigm in freqs.keys():
+            freqs[paradigm] += 1
+            continue
+        elif paradigm in non_matching:
+            continue
+        found = False
         for form in morph_db.all_forms_with_paradigm(paradigm, paradigm).keys():
-            if form.endswith(suffix):
+            if form.endswith(suffix) and not found:
                 freqs[paradigm] = freqs.get(paradigm, 0) + 1
-                break
+                found = True
+        if not found:
+            non_matching.add(paradigm)
     return freqs
 
 
