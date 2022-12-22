@@ -25,9 +25,23 @@ def paradigm_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str = 
     return freqs
 
 
+def suffix_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str) -> Dict[str, int]:
+    """Computes frequencies of paradigms containing given suffix (not only in lemma)"""
+    freqs = dict()
+    for lemma in lemmas(corpus):
+        if lemma not in morph_db.vocab.keys():
+            continue
+        paradigm = morph_db.vocab[lemma]
+        for form in morph_db.all_forms(paradigm).keys():
+            if form.endswith(suffix):
+                freqs[paradigm] = freqs.get(paradigm, 0) + 1
+                break
+    return freqs
+
+
 def main():
     desam = f"C:{sep}Users{sep}ondra{sep}Desktop{sep}MUNI{sep}PB106{sep}data{sep}desam_model{sep}desam"
-    p = paradigm_frequencies(desam, md.MorphDatabase("current.dic", "current.par"), "ek")
+    p = suffix_frequencies(desam, md.MorphDatabase("current.dic", "current.par"), "čka")
     pass
 
 
