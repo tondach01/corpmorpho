@@ -30,10 +30,13 @@ def print_score(score: Dict[str, int]) -> None:
 
 
 def main():
+    from time import time
+    start = time()
     desam = f"C:{sep}Users{sep}ondra{sep}Desktop{sep}MUNI{sep}PB106{sep}data{sep}desam_model{sep}desam"
-    word = "pochybovač"
-    g = guess_paradigm_from_lemma(word, desam, md.MorphDatabase("current.dic", "current.par"))
+    word = "majetnického"
+    g = guess_paradigm(word, desam, md.MorphDatabase("current.dic", "current.par"))
     print_score(g)
+    print(f"finished in {round(time()-start, 3)}s")
 
 
 if __name__ == "__main__":
