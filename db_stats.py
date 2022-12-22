@@ -32,7 +32,7 @@ def suffix_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str) -> 
         if lemma not in morph_db.vocab.keys():
             continue
         paradigm = morph_db.vocab[lemma]
-        for form in morph_db.all_forms(paradigm).keys():
+        for form in morph_db.all_forms_with_paradigm(paradigm, paradigm).keys():
             if form.endswith(suffix):
                 freqs[paradigm] = freqs.get(paradigm, 0) + 1
                 break
