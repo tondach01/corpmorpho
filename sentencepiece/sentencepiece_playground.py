@@ -4,21 +4,22 @@ import guesser
 
 
 def main():
-    test_text = open("C:\\Users\\ondra\\Desktop\\MUNI\\PB106\\data\\ud-treebanks-v2.10\\czech\\UD_Czech-PUD\\cs_pud-ud-test.txt", "r", encoding="utf-8").read()
-    des = open("C:\\Users\\ondra\\Desktop\\MUNI\\BP\\corpmorpho\\desam\\prevert_desam", "r", encoding="utf-8").read().split()
-    f = open("stats", "w", encoding="utf-8")
-    total_tokens = len(test_text.split())
-    print(f"{total_tokens} tokens total", file=f)
-    for model_type in ["bpe", "unigram"]:
-        for vocab_size in range(1000, 21000, 1000):
-            sp.SentencePieceTrainer.train('--input=C:\\Users\\ondra\\Desktop\\MUNI\\BP\\corpmorpho\\desam\\prevert_desam'
-                                          f' --model_prefix=sentencepiece\\m --model_type={model_type} --vocab_size={vocab_size} '
-                                          '--user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
-            m = sp.SentencePieceProcessor()
-            m.load('sentencepiece\\m.model')
-            pieces = len(m.encode_as_pieces(test_text))
-            print(f"vocab_size={vocab_size}, model_type={model_type}: {pieces} pieces, {round(pieces/total_tokens, 3)} pieces per token", file=f)
-    f.close()
+    from time import time
+    from os import sep
+    import morph_database as md
+    from db_stats import print_score
+    start = time()
+    sp.SentencePieceTrainer.train('--input=C:\\Users\\ondra\\Desktop\\MUNI\\BP\\corpmorpho\\desam\\prevert_desam'
+                                  ' --model_prefix=m --model_type=bpe --vocab_size=8000'
+                                  '--user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
+    m = sp.SentencePieceProcessor()
+    m.load('m.model')
+    word = "pohrobkem"
+    desam = f"C:{sep}Users{sep}ondra{sep}Desktop{sep}MUNI{sep}PB106{sep}data{sep}desam_model{sep}desam"
+    g = guesser.guess_paradigm(word, desam, md.MorphDatabase(f"..{sep}current.dic", f"..{sep}current.par"),
+                               m.encode_as_pieces(word))
+    print_score(g)
+    print(f"finished in {round(time() - start, 3)}s")
 
 
 if __name__ == "__main__":

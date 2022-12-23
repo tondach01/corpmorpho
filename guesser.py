@@ -52,8 +52,8 @@ def main():
     from os import sep
     start = time()
     desam = f"C:{sep}Users{sep}ondra{sep}Desktop{sep}MUNI{sep}PB106{sep}data{sep}desam_model{sep}desam"
-    word = "pohrobek"
-    g = guess_paradigm_from_lemma(word, desam, md.MorphDatabase("current.dic", "current.par"))
+    word = "pohrobkem"
+    g = guess_paradigm(word, desam, md.MorphDatabase("current.dic", "current.par"))
     db_stats.print_score(g)
     print(f"finished in {round(time()-start, 3)}s")
 
