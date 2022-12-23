@@ -15,7 +15,7 @@ def main():
     m = sp.SentencePieceProcessor()
     m.load('m.model')
     word = "pohrobkem"
-    desam = f"C:{sep}Users{sep}ondra{sep}Desktop{sep}MUNI{sep}PB106{sep}data{sep}desam_model{sep}desam"
+    desam = f"desam{sep}desam"
     g = guesser.guess_paradigm(word, desam, md.MorphDatabase(f"..{sep}current.dic", f"..{sep}current.par"),
                                m.encode_as_pieces(word))
     print_score(g)

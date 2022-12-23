@@ -58,7 +58,7 @@ def main():
     from time import time
     from os import sep
     start = time()
-    desam = f"C:{sep}Users{sep}ondra{sep}Desktop{sep}MUNI{sep}PB106{sep}data{sep}desam_model{sep}desam"
+    desam = f"desam{sep}desam"
     p = suffix_frequencies(desam, md.MorphDatabase("current.dic", "current.par"), "čka")
     print_score(p)
     print(f"finished in {round(time() - start, 3)}s")

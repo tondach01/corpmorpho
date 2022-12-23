@@ -2,7 +2,6 @@
 import sys
 import morph_database
 from typing import TextIO, Dict, List
-import time
 
 
 def read_corpora(corp: TextIO = sys.stdin) -> morph_database.MORPH_DATABASE:
@@ -98,7 +97,8 @@ def add_morph_db(source: morph_database.MORPH_DATABASE, target: morph_database.M
 
 
 def main() -> None:
-    start = time.time()
+    from time import time
+    start = time()
     args = sys.argv
     args.pop(0)
     print("Reading...")
@@ -121,7 +121,7 @@ def main() -> None:
 
     db_stats(morph_db)
 
-    duration = round(time.time() - start)
+    duration = round(time() - start)
     print(f"Writing done, finished in {duration // 60}min {duration % 60}s.")
 
 

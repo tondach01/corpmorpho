@@ -62,7 +62,7 @@ def tree_print(tree, level: int = 0) -> None:
 
 def main():
     start = time()
-    desam = f"C:{sep}Users{sep}ondra{sep}Desktop{sep}MUNI{sep}PB106{sep}data{sep}desam_model{sep}desam"
+    desam = f"desam{sep}desam"
     tree = stat_tree(desam, ["g", "c", "n"], ["k2"])
     tree_print(tree)
     print(f"finished in {round(time()-start, 3)}s")
