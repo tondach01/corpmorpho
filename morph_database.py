@@ -40,14 +40,22 @@ class MorphDatabase:
             return self.all_forms_with_paradigm(lemma, paradigm)
         return dict()
 
-    def all_forms_with_paradigm(self, lemma: str, paradigm: str) -> FORMS:
+    def all_forms_with_paradigm(self, lemma: str, paradigm: str, informal: bool = True) -> FORMS:
         """Constructs all forms for given lemma when its paradigm is known"""
         forms = dict()
         root = self.word_root(lemma, paradigm)
         for form, tags in self.paradigms[paradigm].items():
             if form == "<suffix>":
                 continue
-            forms[root+form] = forms.get(root+form, []) + tags
+            if not informal:
+                formal = []
+                for tag in tags:
+                    if "wH" not in tag:
+                        formal.append(tag)
+                if formal:
+                    forms[root + form] = forms.get(root + form, []) + formal
+            else:
+                forms[root+form] = forms.get(root+form, []) + tags
         return forms
 
     def word_root(self, lemma: str, paradigm: str) -> str:

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sentencepiece as sp
+import guesser
 
 
 def main():

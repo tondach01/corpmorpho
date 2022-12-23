@@ -1,6 +1,5 @@
 import morph_database as md
 from typing import Dict
-from os import sep
 
 
 def lemmas(corpus: str):
@@ -39,7 +38,7 @@ def suffix_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str) -> 
         elif paradigm in non_matching:
             continue
         found = False
-        for form in morph_db.all_forms_with_paradigm(paradigm, paradigm).keys():
+        for form in morph_db.all_forms_with_paradigm(paradigm, paradigm, informal=False).keys():
             if form.endswith(suffix) and not found:
                 freqs[paradigm] = freqs.get(paradigm, 0) + 1
                 found = True
@@ -48,10 +47,21 @@ def suffix_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str) -> 
     return freqs
 
 
+def print_score(score: Dict[str, int]) -> None:
+    """Prints paradigms in descending order (by their frequency scores)"""
+    for paradigm in sorted(score, key=(lambda x: score[x]), reverse=True):
+        print(f"{paradigm}: {score[paradigm]}")
+    print()
+
+
 def main():
+    from time import time
+    from os import sep
+    start = time()
     desam = f"C:{sep}Users{sep}ondra{sep}Desktop{sep}MUNI{sep}PB106{sep}data{sep}desam_model{sep}desam"
     p = suffix_frequencies(desam, md.MorphDatabase("current.dic", "current.par"), "čka")
-    pass
+    print_score(p)
+    print(f"finished in {round(time() - start, 3)}s")
 
 
 if __name__ == "__main__":
