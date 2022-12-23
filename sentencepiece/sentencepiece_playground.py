@@ -9,7 +9,7 @@ def main():
     import morph_database as md
     from db_stats import print_score
     start = time()
-    sp.SentencePieceTrainer.train('--input=C:\\Users\\ondra\\Desktop\\MUNI\\BP\\corpmorpho\\desam\\prevert_desam'
+    sp.SentencePieceTrainer.train(f'--input={sep}desam{sep}prevert_desam'
                                   ' --model_prefix=m --model_type=bpe --vocab_size=8000'
                                   '--user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
     m = sp.SentencePieceProcessor()
