@@ -27,8 +27,8 @@ def guess_paradigm_seg(word: str, corpus: str, morph_db: md.MorphDatabase, segme
     for paradigm, freq in search_func(corpus, morph_db, suffix).items():
         if paradigm not in score.keys() or score[paradigm] < freq * len(suffix):
             score[paradigm] = freq * len(suffix)
-    for i in range(len(segments)):
-        suffix = suffix.removeprefix(segments[i])
+    for i in range(len(segments) - 1):
+        suffix = suffix.removeprefix(segments[i].strip("▁"))
         for paradigm, freq in search_func(corpus, morph_db, suffix).items():
             if paradigm not in score.keys() or score[paradigm] < freq * len(suffix):
                 score[paradigm] = freq * len(suffix)

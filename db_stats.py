@@ -59,7 +59,8 @@ def main():
     from os import sep
     start = time()
     desam = f"desam{sep}desam"
-    p = suffix_frequencies(desam, md.MorphDatabase("current.dic", "current.par"), "čka")
+    # p = suffix_frequencies(desam, md.MorphDatabase("current.dic", "current.par"), "čka")
+    p = paradigm_frequencies(desam, md.MorphDatabase("current.dic", "current.par"))
     print_score(p)
     print(f"finished in {round(time() - start, 3)}s")
 
