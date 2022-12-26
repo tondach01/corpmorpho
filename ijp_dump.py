@@ -10,21 +10,26 @@ CATEGORIES = {'jednotné číslo': 'nS', 'množné číslo': 'nP', '1. osoba': '
               '5. pád': 'c5', '6. pád': 'c6', '7. pád': 'c7'}
 
 
-def table_dump(word: str) -> pd.DataFrame:
+def table_dump(word: str):
     """For given word, read corresponding entry in IJP and save its paradigm table to pandas dataframe"""
     import urllib.parse as p
-    df = pd.read_html(f"https://prirucka.ujc.cas.cz/?slovo={p.quote(word)}", encoding="utf-8")[0]
-    for i, row in enumerate(df.values):
-        for j, val in enumerate(row):
-            if str(val)[-1].isdigit():
-                df[j][i] = val[:-1]
-            elif str(val) in CATEGORIES.keys():
-                df[j][i] = CATEGORIES[str(val)]
-    return df
+    try:
+        df = pd.read_html(f"https://prirucka.ujc.cas.cz/?slovo={p.quote(word)}")[0]
+        for i, row in enumerate(df.values):
+            for j, val in enumerate(row):
+                if str(val)[-1].isdigit():
+                    df[j][i] = val[:-1]
+                elif str(val) in CATEGORIES.keys():
+                    df[j][i] = CATEGORIES[str(val)]
+        return df
+    except ValueError:
+        return None
 
 
-def df2dict(df: pd.DataFrame) -> Dict[str, Any]:
+def df2dict(df) -> Dict[str, Any]:
     """Converts dataframe with paradigm to simple dictionary"""
+    if df is None:
+        return dict()
     res = dict()
     header = None
     if str(df[0][0]) == "nan":
@@ -48,7 +53,7 @@ def df2dict(df: pd.DataFrame) -> Dict[str, Any]:
 
 
 def main():
-    print(df2dict(table_dump("samohonka")))
+    print(df2dict(table_dump("silný")))
 
 
 if __name__ == "__main__":

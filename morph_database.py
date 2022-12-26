@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-from typing import Tuple, Dict, List, Set, Union
-
+from typing import Tuple, Dict, List, Set, Union, Any
 
 TAILS = Dict[str, List[Tuple[str, List[str]]]]
 FORMS = Dict[str, Union[str, List[str]]]
@@ -12,6 +11,7 @@ VOCABULARY = Dict[str, str]
 class MorphDatabase:
     """This class represents morphological database obtained from dictionary and paradigm files. Holds
     attributes vocab (dictionary lemma:paradigm) and paradigms (paradigm:suffixes and tags)."""
+
     def __init__(self, dic_file: str, par_file: str):
         self.vocab = vocabulary(dic_file)
         self.paradigms = translate_morph_db(par_file)
@@ -55,7 +55,7 @@ class MorphDatabase:
                 if formal:
                     forms[root + form] = forms.get(root + form, []) + formal
             else:
-                forms[root+form] = forms.get(root+form, []) + tags
+                forms[root + form] = forms.get(root + form, []) + tags
         return forms
 
     def word_root(self, lemma: str, paradigm: str) -> str:
@@ -138,14 +138,6 @@ class MorphDatabase:
             return True
         return not needed
 
-    def matching_paradigms(self, lemma: str) -> List[str]:
-        """Returns all paradigms matching given lemma - TBD"""
-        matching = []
-        for paradigm, suffices in self.paradigms.items():
-            if lemma.endswith(suffices["<suffix>"]):
-                matching.append(paradigm)
-        return matching
-
     def paradigm_roots(self) -> None:
         """Assigns suffix to each paradigm in database"""
         for paradigm, suffices in self.paradigms.items():
@@ -160,6 +152,25 @@ class MorphDatabase:
                     break
             if not found:
                 self.paradigms[paradigm]["<suffix>"] = longest_fitting_suffix(paradigm.split("_")[0], suffices)
+
+    def fill_frame(self, frame: Dict[str, Any], lemma: str, paradigm: str) -> None:
+        """Fills given frame with forms of given lemma"""
+        if frame == dict():
+            frame["word"] = lemma
+            return
+        for form, tags in self.all_forms_with_paradigm(lemma, paradigm, informal=False).items():
+            for tag in tags:
+                fill_rec(frame, form, tag)
+
+
+def fill_rec(frame, form: str, tag: str) -> None:
+    """Auxiliary recursive function to MorphDatabase.fill_frame"""
+    if isinstance(frame, Set):
+        frame.add(form)
+        return
+    for key, val in frame.items():
+        if key in tag:
+            fill_rec(val, form, tag)
 
 
 def longest_fitting_suffix(paradigm: str, suffices: FORMS) -> str:
@@ -238,15 +249,34 @@ def correct_encoding(line: str) -> str:
     return line.replace("ą", "š").replace("ľ", "ž").replace("»", "ť").replace("®", "Ž").replace("©", "Š")
 
 
+def paradigm_frame(k: str) -> Dict[str, Any]:
+    """Creates frame with forms necessary for full paradigm (POS-specific)"""
+    if k in "134":
+        return {f"n{number}": {f"c{case}": set() for case in range(1, 8)} for number in "SP"}
+    elif k == "2":
+        return {f"g{gender}": {f"n{number}": {f"c{case}": set() for case in range(1, 8)}
+                               for number in "SP"} for gender in "MIFN"}
+    elif k == "5":
+        frame = {f"n{number}": {f"p{person}": set() for person in range(1, 4)} for number in "SP"}
+        for number in "SP":
+            frame[f"n{number}"].update({f"m{mode}": set() for mode in "RANS"})
+        return frame
+    return dict()
+
+
 def main() -> MorphDatabase:
     return MorphDatabase("current.dic", "current.par")
 
 
 if __name__ == "__main__":
     import time
+
     start = time.time()
     md = main()
     # print(md.matching_paradigms("beránek"))
-    x = md.full_database()
+    # x = md.full_database()
+    word = "silný"
+    f = paradigm_frame("2")
+    md.fill_frame(f, word, md.find_paradigm(word))
     print(f"{len(md.paradigms)} paradigms, {len(md.vocab)} words")
     print(f"finished in {round(time.time() - start, 3)}s")
