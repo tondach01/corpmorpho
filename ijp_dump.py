@@ -1,4 +1,6 @@
+"""This is a script for dumping word paradigms from Internetová jazyková příručka (https://prirucka.ujc.cas.cz)"""
 import pandas as pd
+from typing import Dict, Any
 
 
 CATEGORIES = {'jednotné číslo': 'nS', 'množné číslo': 'nP', '1. osoba': 'p1', '2. osoba': 'p2', '3. osoba': 'p3',
@@ -8,7 +10,8 @@ CATEGORIES = {'jednotné číslo': 'nS', 'množné číslo': 'nP', '1. osoba': '
               '5. pád': 'c5', '6. pád': 'c6', '7. pád': 'c7'}
 
 
-def table_dump(word: str):
+def table_dump(word: str) -> pd.DataFrame:
+    """For given word, read corresponding entry in IJP and save its paradigm table to pandas dataframe"""
     import urllib.parse as p
     df = pd.read_html(f"https://prirucka.ujc.cas.cz/?slovo={p.quote(word)}", encoding="utf-8")[0]
     for i, row in enumerate(df.values):
@@ -20,7 +23,8 @@ def table_dump(word: str):
     return df
 
 
-def df2dict(df: pd.DataFrame):
+def df2dict(df: pd.DataFrame) -> Dict[str, Any]:
+    """Converts dataframe with paradigm to simple dictionary"""
     res = dict()
     header = None
     if str(df[0][0]) == "nan":
