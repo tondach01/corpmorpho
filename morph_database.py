@@ -162,19 +162,21 @@ class MorphDatabase:
             for tag in tags:
                 fill_rec(frame, form, tag)
 
-    def split_vocabulary(self, ratio: float = 0.9, filename: str = "vocab", a_suffix: str = "_a", b_suffix: str = "_b"):
-        """Split the database's vocabulary to two separate files"""
-        a_file = open(filename + a_suffix, "w", encoding="utf-8")
-        b_file = open(filename + b_suffix, "w", encoding="utf-8")
+    def split_vocabulary(self, ratio: float = 0.9, filename: str = "vocab",
+                         a_suffix: str = "_a", b_suffix: str = "_b") -> Tuple[str, str]:
+        """Split the database's vocabulary to two separate files and returns their names"""
+        a_file = open(filename + a_suffix, "w", encoding="windows-1250")
+        b_file = open(filename + b_suffix, "w", encoding="windows-1250")
         i = 0
         for lemma, paradigm in self.vocab.items():
             if (i % 10) / 10 < ratio or lemma == paradigm.split("_")[0]:
-                print(f"{lemma}|{paradigm}", file=a_file)
+                print(f"{lemma}:{paradigm}", file=a_file)
             else:
-                print(f"{lemma}|{paradigm}", file=b_file)
+                print(f"{lemma}:{paradigm}", file=b_file)
             i += 1
         a_file.close()
         b_file.close()
+        return filename + a_suffix, filename + b_suffix
 
 
 def fill_rec(frame, form: str, tag: str) -> None:
@@ -289,6 +291,6 @@ if __name__ == "__main__":
     md = main()
     # print(md.matching_paradigms("beránek"))
     # x = md.full_database()
-    md.split_vocabulary()
+    # md.split_vocabulary()
     print(f"{len(md.paradigms)} paradigms, {len(md.vocab)} words")
     print(f"finished in {round(time.time() - start, 3)}s")
