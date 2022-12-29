@@ -4,8 +4,11 @@ desam/tune_desam
 desam/desam_text.txt
 desam/train_tune_test.py
 desam/vert_to_prevert.py
-sentencepiece/m.model
+sentencepiece/sentencepiece_playground.py
 sentencepiece/m.vocab
 morph_db
 stats
+ijp_dump.py
+corpus_stats.py
+group_word_forms.py
 .idea/
