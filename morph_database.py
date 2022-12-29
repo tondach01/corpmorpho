@@ -162,6 +162,20 @@ class MorphDatabase:
             for tag in tags:
                 fill_rec(frame, form, tag)
 
+    def split_vocabulary(self, ratio: float = 0.9, filename: str = "vocab", a_suffix: str = "_a", b_suffix: str = "_b"):
+        """Split the database's vocabulary to two separate files"""
+        a_file = open(filename + a_suffix, "w", encoding="utf-8")
+        b_file = open(filename + b_suffix, "w", encoding="utf-8")
+        i = 0
+        for lemma, paradigm in self.vocab.items():
+            if (i % 10) / 10 < ratio or lemma == paradigm.split("_")[0]:
+                print(f"{lemma}|{paradigm}", file=a_file)
+            else:
+                print(f"{lemma}|{paradigm}", file=b_file)
+            i += 1
+        a_file.close()
+        b_file.close()
+
 
 def fill_rec(frame, form: str, tag: str) -> None:
     """Auxiliary recursive function to MorphDatabase.fill_frame"""
@@ -275,8 +289,6 @@ if __name__ == "__main__":
     md = main()
     # print(md.matching_paradigms("beránek"))
     # x = md.full_database()
-    word = "silný"
-    f = paradigm_frame("2")
-    md.fill_frame(f, word, md.find_paradigm(word))
+    md.split_vocabulary()
     print(f"{len(md.paradigms)} paradigms, {len(md.vocab)} words")
     print(f"finished in {round(time.time() - start, 3)}s")
