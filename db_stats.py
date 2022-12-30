@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import morph_database as md
 from typing import Dict
 
