@@ -46,9 +46,11 @@ def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, se
 
 def main():
     from time import time
+    from sys import argv
     start = time()
+    segmenter = "" if len(argv) < 2 else argv[1]
     train, test = md.MorphDatabase("current.dic", "current.par").split_vocabulary()
-    a, c = segmented_guess(test, f"desam{sep}desam", md.MorphDatabase(train, "current.par"), segmenter="morfessor", debug=True)
+    a, c = segmented_guess(test, f"desam{sep}desam", md.MorphDatabase(train, "current.par"), segmenter=segmenter, debug=True)
     print(f"finished in {round(time() - start)}s, {c} correct out of {a}")
 
 
