@@ -17,10 +17,12 @@ class SortedListCell:
                f" -> {'X' if self.right is None else self.right.name}"
 
     def __le__(self, other):
+        if self.value == other.value:
+            return len(self.name) >= len(other.name)
         return self.value <= other.value
 
-    def __ge__(self, other):
-        return self.value == other.value or not self <= other
+    def __gt__(self, other):
+        return not self <= other
 
 
 class SortedList:
@@ -86,7 +88,7 @@ class SortedList:
                     current.right.left = current.left
             new_left = current.left
             while new_left is not None:
-                if new_left >= current:
+                if new_left > current:
                     current.left = new_left
                     new_left.right.left = current
                     current.right = new_left.right
