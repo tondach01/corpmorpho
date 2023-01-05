@@ -203,8 +203,8 @@ def main():
     train, test = md.MorphDatabase("current.dic", "current.par").split_vocabulary()
     train_md = md.MorphDatabase(train, "current.par")
     cache = scores_of_most_common(most_common_suffixes(test, 1000), f"desam{sep}desam", train_md)
-    # a, c = segmented_guess(test, f"desam{sep}desam", train_md, segmenter=seg, debug=True, cache=cache)
-    print(f"finished in {round(time() - start)}s")
+    a, c = segmented_guess(test, f"desam{sep}desam", train_md, segmenter=seg, debug=True, cache=cache)
+    # print(f"finished in {round(time() - start)}s")
     # print(f"{c} correct out of {a}")
 
 
