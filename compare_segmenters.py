@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
+import db_stats
 import morph_database as md
 import guesser as g
-from typing import Tuple, Dict
+from typing import Tuple, Set, Dict
 from os import sep
 
 
 class SortedListCell:
+    """This class represents one cell of (sorted) linked list"""
     def __init__(self, name, value):
         self.value = value
         self.name = name
@@ -26,6 +28,7 @@ class SortedListCell:
 
 
 class SortedList:
+    """This class represents sorted list of cells"""
     def __init__(self):
         self.first = None
         self.last = None
@@ -51,31 +54,33 @@ class SortedList:
             current = current.right
         return out
 
-    def add(self, cell: SortedListCell):
+    def add(self, cell: SortedListCell) -> None:
+        """Adds new cell to sorted list"""
         self.length += 1
         if self.first is None:
             self.first = cell
             self.last = cell
             return
-        if self.first <= cell:
-            self.first.left = cell
-            cell.right = self.first
-            self.first = cell
+        if self.last > cell:
+            self.last.right = cell
+            cell.left = self.last
+            self.last = cell
             return
-        current = self.first
+        current = self.last
         while current is not None:
-            if current <= cell:
-                cell.left = current.left
-                cell.right = current
-                current.left.right = cell
-                current.left = cell
+            if current > cell:
+                cell.right = current.right
+                cell.left = current
+                current.right.left = cell
+                current.right = cell
                 return
-            current = current.right
-        cell.left = self.last
-        self.last.right = cell
-        self.last = cell
+            current = current.left
+        cell.right = self.first
+        self.first.left = cell
+        self.first = cell
 
-    def increase_value(self, name):
+    def increase_value(self, name: str):
+        """Increases value of cell with given name by 1 and moves it up the list if necessary"""
         current = self.first
         while current is not None:
             if current.name != name:
@@ -102,15 +107,8 @@ class SortedList:
                 self.first = current
             return
 
-    def append(self, cell):
-        if self.length == 0:
-            self.add(cell)
-        self.last.right = cell
-        cell.left = self.last
-        self.last = cell
-        self.length += 1
-
-    def pop(self):
+    def pop(self) -> None:
+        """Removes last cell of the sorted list. Does nothing if list is empty"""
         if self.length == 0:
             return
         self.length -= 1
@@ -120,11 +118,12 @@ class SortedList:
         else:
             self.last = self.last.left
 
-    def first_n(self, n):
-        scores = dict()
+    def first_n(self, n: int) -> Set[str]:
+        """Returns set of n most occurred suffixes in sorted list"""
+        scores = set()
         current = self.first
         for _ in range(min(self.length, n)):
-            scores[current.name] = current.value * len(current.name)
+            scores.add(current.name)
             current = current.right
         return scores
 
@@ -136,7 +135,7 @@ def baseline_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase,
 
 
 def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, segmenter: str = "",
-                    top_n: int = 1, debug: bool = False) -> Tuple[int, int]:
+                    top_n: int = 1, debug: bool = False, cache=None) -> Tuple[int, int]:
     """Tries to guess paradigm for each lemma in test_vocab given its segmentation (if given segmenter)
     and returns its success rate (all, correct)"""
     segment = (lambda x: list(x[i] for i in range(len(x))))
@@ -156,7 +155,7 @@ def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, se
                 print(line.strip())
             lem_par = line.strip().split(":")
             segments = segment(lem_par[0])
-            score = g.guess_paradigm_from_lemma_seg(lem_par[0], corpus, morph_db, segments)
+            score = g.guess_paradigm_from_lemma_seg(lem_par[0], corpus, morph_db, segments, cache=cache)
             paradigms = list(sorted(score, key=(lambda x: score[x]), reverse=True))
             if debug:
                 print("\t" + ", ".join(paradigms))
@@ -168,13 +167,12 @@ def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, se
     return all_pars, correct
 
 
-def most_common_suffixes(vocab_file: str, size: int = 100) -> Dict[str, int]:
+def most_common_suffixes(vocab_file: str, size: int = 100) -> Set[str]:
     """Finds <size> probably (not surely) most common suffixes for lemmas in vocabulary file
     (of format lemma:paradigm per each line)"""
     cache = SortedList()
     with open(vocab_file, encoding="windows-1250") as f:
         for line in f:
-            print(line.strip())
             lemma = line.split(":")[0]
             for suffix in [lemma[i:] for i in range(len(lemma))]:
                 if suffix in cache:
@@ -187,17 +185,28 @@ def most_common_suffixes(vocab_file: str, size: int = 100) -> Dict[str, int]:
     return cache.first_n(size)
 
 
+def scores_of_most_common(common: Set[str], corpus: str, morph_db: md.MorphDatabase) -> Dict[str, Dict[str, int]]:
+    scores = dict()
+    for suffix in common:
+        scores[suffix] = db_stats.paradigm_frequencies(corpus, morph_db, suffix)
+    for suffix, paradigms in scores.items():
+        for paradigm, freq in paradigms.items():
+            scores[suffix][paradigm] = freq * len(suffix)
+    return scores
+
+
 def main():
     from time import time
     from sys import argv
     start = time()
-    segmenter = "" if len(argv) < 2 else argv[1]
+    seg = "" if len(argv) < 2 else argv[1]
     train, test = md.MorphDatabase("current.dic", "current.par").split_vocabulary()
-    a, c = segmented_guess(test, f"desam{sep}desam", md.MorphDatabase(train, "current.par"), segmenter=segmenter, debug=True)
-    print(f"finished in {round(time() - start)}s, {c} correct out of {a}")
+    train_md = md.MorphDatabase(train, "current.par")
+    cache = scores_of_most_common(most_common_suffixes(test, 1000), f"desam{sep}desam", train_md)
+    # a, c = segmented_guess(test, f"desam{sep}desam", train_md, segmenter=seg, debug=True, cache=cache)
+    print(f"finished in {round(time() - start)}s")
+    # print(f"{c} correct out of {a}")
 
 
 if __name__ == "__main__":
-    # main()
-    s = most_common_suffixes("vocab_b")
-    pass
+    main()

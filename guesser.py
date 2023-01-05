@@ -4,45 +4,47 @@ import db_stats
 from typing import Dict, List
 
 
-def guess_paradigm(word: str, corpus: str, morph_db: md.MorphDatabase, only_lemmas: bool = False) -> Dict[str, int]:
+def guess_paradigm(word: str, corpus: str, morph_db: md.MorphDatabase,
+                   only_lemmas: bool = False, cache=None) -> Dict[str, int]:
     """Guesses the probabilities of paradigms for given word, bigger matched suffixes are prioritized.
     Note: very slow for non-lemmatized word"""
-    score = dict()
-    search_func = db_stats.paradigm_frequencies if only_lemmas else db_stats.suffix_frequencies
-    for i in range(len(word)):
-        suffix = word[i:]
-        for paradigm, freq in search_func(corpus, morph_db, suffix).items():
-            score[paradigm] = max(freq*len(suffix), score.get(paradigm, 0))
-    return score
+    return guess_paradigm_seg(word, corpus, morph_db, [word[i] for i in range(len(word))], only_lemmas, cache)
 
 
 def guess_paradigm_seg(word: str, corpus: str, morph_db: md.MorphDatabase, segments: List[str],
-                       only_lemmas: bool = False) -> Dict[str, int]:
+                       only_lemmas: bool = False, cache=None) -> Dict[str, int]:
     """Guesses the probabilities of paradigms for given word and its sub-word segmentation,
     bigger matched suffixes are prioritized. Note: very slow for non-lemmatized word"""
     score = dict()
     search_func = db_stats.paradigm_frequencies if only_lemmas else db_stats.suffix_frequencies
     suffix = word
-    for paradigm, freq in search_func(corpus, morph_db, suffix).items():
-        if paradigm not in score.keys() or score[paradigm] < freq * len(suffix):
-            score[paradigm] = freq * len(suffix)
+    if only_lemmas and cache is not None and suffix in cache.keys():
+        for paradigm, freq in cache[suffix].items():
+            score[paradigm] = freq
+    else:
+        for paradigm, freq in search_func(corpus, morph_db, suffix).items():
+            score[paradigm] = max(freq * len(suffix), score.get(paradigm, 0))
     for i in range(len(segments) - 1):
         suffix = suffix[len(segments[i].strip("▁")):]
+        if only_lemmas and cache is not None and suffix in cache.keys():
+            for paradigm, freq in cache[suffix].items():
+                score[paradigm] = max(freq, score.get(paradigm, 0))
+            continue
         for paradigm, freq in search_func(corpus, morph_db, suffix).items():
             score[paradigm] = max(freq * len(suffix), score.get(paradigm, 0))
     return score
 
 
-def guess_paradigm_from_lemma(lemma: str, corpus: str, morph_db: md.MorphDatabase) -> Dict[str, int]:
+def guess_paradigm_from_lemma(lemma: str, corpus: str, morph_db: md.MorphDatabase, cache=None) -> Dict[str, int]:
     """Guesses the probabilities of paradigms for given lemma, bigger matched suffixes are prioritized."""
-    return guess_paradigm(lemma, corpus, morph_db, True)
+    return guess_paradigm(lemma, corpus, morph_db, only_lemmas=True, cache=cache)
 
 
 def guess_paradigm_from_lemma_seg(lemma: str, corpus: str, morph_db: md.MorphDatabase,
-                                  segments: List[str]) -> Dict[str, int]:
+                                  segments: List[str], cache=None) -> Dict[str, int]:
     """Guesses the probabilities of paradigms for given lemma and its segmentation,
     bigger matched suffixes are prioritized."""
-    return guess_paradigm_seg(lemma, corpus, morph_db, segments, True)
+    return guess_paradigm_seg(lemma, corpus, morph_db, segments, only_lemmas=True, cache=cache)
 
 
 def main():
