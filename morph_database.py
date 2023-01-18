@@ -153,15 +153,6 @@ class MorphDatabase:
             if not found:
                 self.paradigms[paradigm]["<suffix>"] = longest_fitting_suffix(paradigm.split("_")[0], suffices)
 
-    def fill_frame(self, frame: Dict[str, Any], lemma: str, paradigm: str) -> None:
-        """Fills given frame with forms of given lemma"""
-        if frame == dict():
-            frame["word"] = lemma
-            return
-        for form, tags in self.all_forms_with_paradigm(lemma, paradigm, informal=False).items():
-            for tag in tags:
-                fill_rec(frame, form, tag)
-
     def split_vocabulary(self, ratio: int = 10, filename: str = "vocab",
                          a_suffix: str = "_a", b_suffix: str = "_b") -> Tuple[str, str]:
         """Split the database's vocabulary into two separate files of sizes
@@ -178,16 +169,6 @@ class MorphDatabase:
         a_file.close()
         b_file.close()
         return filename + a_suffix, filename + b_suffix
-
-
-def fill_rec(frame, form: str, tag: str) -> None:
-    """Auxiliary recursive function to MorphDatabase.fill_frame"""
-    if isinstance(frame, Set):
-        frame.add(form)
-        return
-    for key, val in frame.items():
-        if key in tag:
-            fill_rec(val, form, tag)
 
 
 def longest_fitting_suffix(paradigm: str, suffices: FORMS) -> str:
