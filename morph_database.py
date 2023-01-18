@@ -162,14 +162,15 @@ class MorphDatabase:
             for tag in tags:
                 fill_rec(frame, form, tag)
 
-    def split_vocabulary(self, ratio: float = 0.9, filename: str = "vocab",
+    def split_vocabulary(self, ratio: int = 10, filename: str = "vocab",
                          a_suffix: str = "_a", b_suffix: str = "_b") -> Tuple[str, str]:
-        """Split the database's vocabulary to two separate files and returns their names"""
+        """Split the database's vocabulary into two separate files of sizes
+        approx. 1 : <ratio> - 1, returns their names"""
         a_file = open(filename + a_suffix, "w", encoding="windows-1250")
         b_file = open(filename + b_suffix, "w", encoding="windows-1250")
         i = 0
         for lemma, paradigm in self.vocab.items():
-            if (i % 10) / 10 < ratio or lemma == paradigm.split("_")[0]:
+            if (i % ratio != 0) or lemma == paradigm.split("_")[0]:
                 print(f"{lemma}:{paradigm}", file=a_file)
             else:
                 print(f"{lemma}:{paradigm}", file=b_file)

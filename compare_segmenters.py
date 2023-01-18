@@ -2,7 +2,7 @@
 import db_stats
 import morph_database as md
 import guesser as g
-from typing import Tuple, Set, Dict
+from typing import Set, Dict, Tuple
 from os import sep
 
 
@@ -120,24 +120,22 @@ class SortedList:
 
     def first_n(self, n: int) -> Set[str]:
         """Returns set of n most occurred suffixes in sorted list"""
-        scores = set()
+        score = set()
         current = self.first
         for _ in range(min(self.length, n)):
-            scores.add(current.name)
+            score.add(current.name)
             current = current.right
-        return scores
+        return score
 
 
-def baseline_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase,
-                   top_n: int = 1, debug: bool = False) -> Tuple[int, int]:
+def baseline_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, debug: bool = False) -> None:
     """Tries to guess paradigm for each lemma in test_vocab and returns its success rate (all, correct)"""
-    return segmented_guess(test_vocab, corpus, morph_db, top_n=top_n, debug=debug)
+    return segmented_guess(test_vocab, corpus, morph_db, debug=debug)
 
 
 def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, segmenter: str = "",
-                    top_n: int = 1, debug: bool = False, cache=None) -> Tuple[int, int]:
-    """Tries to guess paradigm for each lemma in test_vocab given its segmentation (if given segmenter)
-    and returns its success rate (all, correct)"""
+                    debug: bool = False, cache=None) -> None:
+    """Tries to guess paradigm for each lemma in test_vocab given its segmentation (if given segmenter)."""
     segment = (lambda x: list(x[i] for i in range(len(x))))
     if segmenter == "sentencepiece":
         import sentencepiece as sp
@@ -148,7 +146,6 @@ def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, se
         import morfessor
         m = morfessor.MorfessorIO().read_binary_model_file(f"morfessor{sep}morfessor_model")
         segment = (lambda x: m.viterbi_segment(x)[0])
-    all_pars, correct = 0, 0
     with open(test_vocab, encoding="windows-1250") as test:
         for line in test:
             if debug:
@@ -159,12 +156,6 @@ def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, se
             paradigms = list(sorted(score, key=(lambda x: score[x]), reverse=True))
             if debug:
                 print("\t" + ", ".join(paradigms))
-            if len(paradigms) < top_n and lem_par[1] in paradigms:
-                correct += 1
-            elif lem_par[1] in paradigms[:top_n]:
-                correct += 1
-            all_pars += 1
-    return all_pars, correct
 
 
 def most_common_suffixes(vocab_file: str, size: int = 100) -> Set[str]:
@@ -185,14 +176,38 @@ def most_common_suffixes(vocab_file: str, size: int = 100) -> Set[str]:
     return cache.first_n(size)
 
 
-def scores_of_most_common(common: Set[str], corpus: str, morph_db: md.MorphDatabase) -> Dict[str, Dict[str, int]]:
-    scores = dict()
+def scores(common: Set[str], corpus: str, morph_db: md.MorphDatabase) -> Dict[str, Dict[str, int]]:
+    """Precomputes frequency scores for given set of common suffixes"""
+    score = dict()
     for suffix in common:
-        scores[suffix] = db_stats.paradigm_frequencies(corpus, morph_db, suffix)
-    for suffix, paradigms in scores.items():
+        score[suffix] = db_stats.paradigm_frequencies(corpus, morph_db, suffix)
+    for suffix, paradigms in score.items():
         for paradigm, freq in paradigms.items():
-            scores[suffix][paradigm] = freq * len(suffix)
-    return scores
+            score[suffix][paradigm] = freq * len(suffix)
+    return score
+
+
+def scores_of_most_common(vocab_file: str, corpus: str,
+                          morph_db: md.MorphDatabase, size: int = 100) -> Dict[str, Dict[str, int]]:
+    """Find <size> the most common suffixes in <vocab_file> a computes their frequency scores"""
+    return scores(most_common_suffixes(vocab_file, size), corpus, morph_db)
+
+
+def evaluate(log_file: str, top_n: int = 1) -> Tuple[int, int]:
+    """Reads the given log file and evaluates its success rate in <top_n> guesses. Returns (correct, all)"""
+    correct, entries = 0, 0
+    with open(log_file) as log:
+        line = log.readline()
+        while line is not None:
+            entries += 1
+            paradigm = line.strip().split(":")[1]
+            guesses = log.readline().strip().split(", ")
+            if len(guesses) < top_n and paradigm in guesses:
+                correct += 1
+            elif len(guesses) >= top_n and paradigm in guesses[:top_n]:
+                correct += 1
+            line = log.readline()
+    return correct, entries
 
 
 def main():
@@ -202,10 +217,9 @@ def main():
     seg = "" if len(argv) < 2 else argv[1]
     train, test = md.MorphDatabase("current.dic", "current.par").split_vocabulary()
     train_md = md.MorphDatabase(train, "current.par")
-    cache = scores_of_most_common(most_common_suffixes(test, 1000), f"desam{sep}desam", train_md)
-    a, c = segmented_guess(test, f"desam{sep}desam", train_md, segmenter=seg, debug=True, cache=cache)
+    cache = scores_of_most_common(test, f"desam{sep}desam", train_md, size=200)
+    segmented_guess(test, f"desam{sep}desam", train_md, segmenter=seg, debug=True, cache=cache)
     # print(f"finished in {round(time() - start)}s")
-    # print(f"{c} correct out of {a}")
 
 
 if __name__ == "__main__":
