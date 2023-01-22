@@ -193,12 +193,16 @@ def scores_of_most_common(vocab_file: str, corpus: str,
     return scores(most_common_suffixes(vocab_file, size), corpus, morph_db)
 
 
+def correct_encoding(line: str) -> str:
+    return line.replace("Ü", "š").replace("¨", "ů").replace("×", "ž").replace("ß", "á").replace("°", "ř")
+
+
 def evaluate(log_file: str, top_n: int = 1) -> Tuple[int, int]:
     """Reads the given log file and evaluates its success rate in <top_n> guesses. Returns (correct, all)"""
     correct, entries = 0, 0
-    with open(log_file) as log:
+    with open(log_file, encoding="utf-16") as log:
         line = log.readline()
-        while line is not None:
+        while line:
             entries += 1
             paradigm = line.strip().split(":")[1]
             guesses = log.readline().strip().split(", ")
@@ -208,6 +212,12 @@ def evaluate(log_file: str, top_n: int = 1) -> Tuple[int, int]:
                 correct += 1
             line = log.readline()
     return correct, entries
+
+
+def full_eval(log_file: str) -> None:
+    for i in range(5):
+        correct, entries = evaluate(log_file, i+1)
+        print(f"top {i+1}: {correct}/{entries}")
 
 
 def main():
@@ -223,4 +233,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    full_eval(f"logs{sep}log_morfessor_viterbi")
