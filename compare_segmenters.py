@@ -193,10 +193,6 @@ def scores_of_most_common(vocab_file: str, corpus: str,
     return scores(most_common_suffixes(vocab_file, size), corpus, morph_db)
 
 
-def correct_encoding(line: str) -> str:
-    return line.replace("Ü", "š").replace("¨", "ů").replace("×", "ž").replace("ß", "á").replace("°", "ř")
-
-
 def evaluate(log_file: str, top_n: int = 1) -> Tuple[int, int]:
     """Reads the given log file and evaluates its success rate in <top_n> guesses. Returns (correct, all)"""
     correct, entries = 0, 0
