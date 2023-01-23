@@ -134,7 +134,7 @@ def baseline_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, deb
 
 
 def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, segmenter: str = "",
-                    debug: bool = False, cache=None) -> None:
+                    debug: bool = False) -> None:
     """Tries to guess paradigm for each lemma in test_vocab given its segmentation (if given segmenter)."""
     segment = (lambda x: list(x[i] for i in range(len(x))))
     if segmenter == "sentencepiece":
@@ -150,9 +150,8 @@ def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, se
         for line in test:
             if debug:
                 print(line.strip())
-            lem_par = line.strip().split(":")
-            segments = segment(lem_par[0])
-            score = g.guess_paradigm_from_lemma_seg(lem_par[0], corpus, morph_db, segments, cache=cache)
+            segments = segment(line.strip().split(":")[0])
+            score = g.guess_paradigm_from_lemma_seg(corpus, morph_db, segments)
             paradigms = list(sorted(score, key=(lambda x: score[x]), reverse=True))
             if debug:
                 print("\t" + ", ".join(paradigms))
@@ -232,11 +231,11 @@ def main():
     seg = "" if len(argv) < 2 else argv[1]
     train, test = md.MorphDatabase("current.dic", "current.par").split_vocabulary()
     train_md = md.MorphDatabase(train, "current.par")
-    cache = scores_of_most_common(test, f"desam{sep}desam", train_md, size=200)
-    segmented_guess(test, f"desam{sep}desam", train_md, segmenter=seg, debug=True, cache=cache)
+    # cache = scores_of_most_common(test, f"desam{sep}desam", train_md, size=200)
+    segmented_guess(test, f"desam{sep}desam", train_md, segmenter=seg, debug=True)
     # print(f"finished in {round(time() - start)}s")
 
 
 if __name__ == "__main__":
-    # main()
-    eval_all_logs()
+    main()
+    # eval_all_logs()
