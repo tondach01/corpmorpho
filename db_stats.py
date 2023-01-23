@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import morph_database as md
-from typing import Dict
+from typing import Dict, List
 
 
 def lemmas(corpus: str):
@@ -23,6 +23,16 @@ def paradigm_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str = 
         paradigm = morph_db.vocab[lemma]
         freqs[paradigm] = freqs.get(paradigm, 0) + 1
     return freqs
+
+
+# TODO: function for paradigm frequency scores of whole segmented word
+def lemma_scores(corpus: str, morph_db: md.MorphDatabase, segments: List[str]) -> Dict[str, int]:
+    """Computes frequency scores of whole segmented word from given corpora"""
+    freqs = dict()
+    for lemma in lemmas(corpus):
+        if lemma not in morph_db.vocab.keys():
+            continue
+    pass
 
 
 def suffix_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str) -> Dict[str, int]:
