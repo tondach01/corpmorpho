@@ -25,14 +25,23 @@ def paradigm_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str = 
     return freqs
 
 
-# TODO: function for paradigm frequency scores of whole segmented word
 def lemma_scores(corpus: str, morph_db: md.MorphDatabase, segments: List[str]) -> Dict[str, int]:
     """Computes frequency scores of whole segmented word from given corpora"""
     freqs = dict()
     for lemma in lemmas(corpus):
         if lemma not in morph_db.vocab.keys():
             continue
-    pass
+        paradigm = morph_db.vocab[lemma]
+        for segment in segments:
+            if not paradigm.endswith(segment):
+                break
+            freqs[segment] = freqs.get(segment, dict())
+            freqs[segment][paradigm] = freqs[segment].get(paradigm, 0) + 1
+    final_freqs = dict()
+    for segment, scores in freqs.items():
+        for paradigm, score in scores.items():
+            final_freqs[paradigm] = max(final_freqs.get(paradigm, 0), score * len(segment))
+    return final_freqs
 
 
 def suffix_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str) -> Dict[str, int]:
