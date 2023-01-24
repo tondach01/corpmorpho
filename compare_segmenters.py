@@ -13,23 +13,25 @@ def baseline_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase) -> 
 
 def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, segmenter: str = "") -> None:
     """Tries to guess paradigm for each lemma in test_vocab given its segmentation (if given segmenter)."""
+    log_file = open(f"logs{sep}log_{segmenter}", "w", encoding="utf-8")
     segment = (lambda x: list(x[i] for i in range(len(x))))
-    if segmenter == "sentencepiece":
+    if "sentencepiece" in segmenter:
         import sentencepiece as sp
         m = sp.SentencePieceProcessor()
-        m.load(f"sentencepiece{sep}m.model")
+        m.load(f"sentencepiece{sep}{segmenter[14:]}.model")
         segment = m.encode_as_pieces
-    elif segmenter == "morfessor":
+    elif "morfessor" in segmenter:
         import morfessor
         m = morfessor.MorfessorIO().read_binary_model_file(f"morfessor{sep}morfessor_model")
         segment = (lambda x: m.viterbi_segment(x)[0])
     with open(test_vocab, encoding="windows-1250") as test:
         for line in test:
-            print(line.strip())
+            print(line.strip(), file=log_file)
             segments = segment(line.strip().split(":")[0])
             score = g.guess_paradigm_from_lemma_seg(corpus, morph_db, segments)
             paradigms = list(sorted(score, key=(lambda x: score[x]), reverse=True))
-            print("\t" + ", ".join(paradigms))
+            print("\t" + ", ".join(paradigms), file=log_file)
+    log_file.close()
 
 
 def scores(common: Set[str], corpus: str, morph_db: md.MorphDatabase) -> Dict[str, Dict[str, int]]:
