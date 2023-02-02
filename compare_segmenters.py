@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-import db_stats
 import morph_database as md
 import guesser as g
-from typing import Set, Dict, Tuple
+from typing import Tuple
 from os import sep
 
 
@@ -34,22 +33,11 @@ def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, se
     log_file.close()
 
 
-def scores(common: Set[str], corpus: str, morph_db: md.MorphDatabase) -> Dict[str, Dict[str, int]]:
-    """Precomputes frequency scores for given set of common suffixes"""
-    score = dict()
-    for suffix in common:
-        score[suffix] = db_stats.paradigm_frequencies(corpus, morph_db, suffix)
-    for suffix, paradigms in score.items():
-        for paradigm, freq in paradigms.items():
-            score[suffix][paradigm] = freq * len(suffix)
-    return score
-
-
 def evaluate(log_file: str, top_n: int = 1) -> Tuple[int, int, int]:
     """Reads the given log file and evaluates its success rate in <top_n> guesses.
     Returns (correct, all, total guesses)"""
     correct, entries, guess_count = 0, 0, 0
-    with open(log_file, encoding="utf-16") as log:
+    with open(log_file, encoding="utf-8") as log:
         line = log.readline()
         while line:
             entries += 1
@@ -89,5 +77,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-    # eval_all_logs()
+    # main()
+    eval_all_logs()

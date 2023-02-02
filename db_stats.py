@@ -34,7 +34,7 @@ def lemma_scores(corpus: str, morph_db: md.MorphDatabase, segments: List[str]) -
         paradigm = morph_db.vocab[lemma]
         for segment in segments:
             segment = segment.lstrip("\u2581")
-            if not paradigm.split("_")[0].endswith(segment):
+            if not lemma.endswith(segment):
                 break
             freqs[segment] = freqs.get(segment, dict())
             freqs[segment][paradigm] = freqs[segment].get(paradigm, 0) + 1
