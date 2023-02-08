@@ -13,11 +13,18 @@ def main():
                           ' --user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
     """
     for model_type in ["bpe"]:
-        for vocab_size in range(26000, 28001, 2000):
+        for vocab_size in range(36000, 40001, 2000):
             Trainer.train(f'--input=..{sep}desam{sep}prevert_desam'
                           f' --model_prefix={model_type + "_" + str(vocab_size)}'
                           f' --model_type={model_type} --vocab_size={vocab_size}'
                           ' --user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
+    for model_type in ["unigram"]:
+        for vocab_size in range(18000, 40001, 2000):
+            Trainer.train(f'--input=..{sep}desam{sep}prevert_desam'
+                          f' --model_prefix={model_type + "_" + str(vocab_size)}'
+                          f' --model_type={model_type} --vocab_size={vocab_size}'
+                          ' --user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
+
 
 
 if __name__ == "__main__":

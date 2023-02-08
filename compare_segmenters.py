@@ -77,5 +77,5 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    eval_all_logs()
+    main()
+    # eval_all_logs()
