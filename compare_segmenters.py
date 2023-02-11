@@ -33,38 +33,6 @@ def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, se
     log_file.close()
 
 
-def evaluate(log_file: str, top_n: int = 1) -> Tuple[int, int, int]:
-    """Reads the given log file and evaluates its success rate in <top_n> guesses.
-    Returns (correct, all, total guesses)"""
-    correct, entries, guess_count = 0, 0, 0
-    with open(log_file, encoding="utf-8") as log:
-        line = log.readline()
-        while line:
-            entries += 1
-            paradigm = line.strip().split(":")[1]
-            guesses = log.readline().strip().split(", ")
-            guess_count += len(guesses)
-            if len(guesses) < top_n and paradigm in guesses:
-                correct += 1
-            elif len(guesses) >= top_n and paradigm in guesses[:top_n]:
-                correct += 1
-            line = log.readline()
-    return correct, entries, guess_count
-
-
-def full_eval(log_file: str) -> None:
-    for i in range(5):
-        correct, entries, guess_count = evaluate(log_file, i+1)
-        print(f"top {i+1}: {correct}/{entries}, {round(guess_count/entries, 3)} guesses in average")
-
-
-def eval_all_logs() -> None:
-    from os import listdir
-    for log_file in listdir("logs"):
-        print(f"{log_file}:")
-        full_eval(f"logs{sep}{log_file}")
-
-
 def main():
     from time import time
     from sys import argv
@@ -78,4 +46,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # eval_all_logs()
