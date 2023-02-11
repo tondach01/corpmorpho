@@ -14,8 +14,11 @@ def evaluate(log_file: str, top_n: int = 5) -> Tuple[List[int], int, int]:
             entries += 1
             paradigm = line.strip().split(":")[1]
             guesses = log.readline().strip().split(", ")
+            if "" in guesses:
+                guesses.remove("")
+            guesses += [max(top_n - len(guesses), 0) * "_"]
             guess_count += len(guesses)
-            for i in range(min(len(guesses), top_n) - 1, -1, -1):
+            for i in range(top_n - 1, -1, -1):
                 if paradigm not in guesses[:i+1]:
                     break
                 correct[i] += 1
