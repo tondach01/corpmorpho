@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-from typing import Tuple, List
-from os import sep
+from typing import Tuple, List, Dict, Any
+from os import sep, listdir
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 
 def evaluate(log_file: str, top_n: int = 5) -> Tuple[List[int], int, int]:
@@ -33,10 +35,35 @@ def full_eval(log_file: str, top_n: int = 5) -> None:
 
 
 def eval_all_logs() -> None:
-    from os import listdir
     for log_file in listdir("logs"):
         print(f"{log_file}:")
         full_eval(f"logs{sep}{log_file}")
+
+
+def plot_results():
+    pass
+
+
+def newest_res_file() -> str:
+    from os import path
+    return "results" + sep + max(listdir("results"), key=(lambda x: path.getctime(f"results{sep}{x}")))
+
+
+def load_results() -> Dict[Tuple[str, str, int], Any]:
+    loaded = dict()
+    with open(newest_res_file(), encoding="utf-16le") as res:
+        for line in res:
+            if "log" in line:
+                names = line.strip().split("_")
+                tool, model, vocab_size = names[1], "" if len(names) < 3 else names[2], 0 if len(names) < 4 else names[3]
+                loaded[(tool, model, vocab_size)] = dict(test_size=0, average_guesses=0.0, precisions=[])
+            elif line.startswith("top"):
+                data = line.split(" ")
+                entry = loaded[(tool, model, vocab_size)]
+                entry["precisions"].append(int(data[2].rstrip(",").split("/")[0]))
+                entry["test_size"] = int(data[2].rstrip(",").split("/")[1])
+                entry["average_guesses"] = float(data[3])
+    return loaded
 
 
 def main():
@@ -47,4 +74,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    load_results()
