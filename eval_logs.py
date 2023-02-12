@@ -89,4 +89,4 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    sentencepiece_plot()
+    sentencepiece_plot(4)
