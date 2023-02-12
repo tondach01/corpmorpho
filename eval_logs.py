@@ -44,6 +44,7 @@ def plot_results(x_axis: List[Any], data: Dict[str, List[Any]], x_label: str = "
         plt.plot(x_axis, values, label=label)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
+    plt.legend()
     plt.show()
 
 
