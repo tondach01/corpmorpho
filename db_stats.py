@@ -22,6 +22,22 @@ def lemmas_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame
     return frame[frame.paradigm != ""]
 
 
+def freqlist_to_dataframe(freqlist: str, morph_db: md.MorphDatabase, limit: int = -1) -> pd.DataFrame:
+    """Loads data from given frequency list to dataframe. The wordlist should be in format 'word lemma frequency'.
+    Amount of loaded data can be limited (default -1 = unlimited)."""
+    data = []
+    with open(freqlist) as fl:
+        row = fl.readline()
+        while row is not None:
+            if len(data) == limit:
+                break
+            elements = row.split()
+            if len(elements) >= 3:
+                data.append(elements[:3])
+            row = fl.readline()
+    return pd.DataFrame(data=data, columns=["word", "lemma", "frequency"])
+
+
 def pandas_lemma_scores(segments: List[str], frame: pd.DataFrame) -> Dict[str, int]:
     filtered = frame
     scores = dict()
@@ -97,6 +113,7 @@ def print_score(score: Dict[str, int]) -> None:
 
 
 def main():
+    '''
     from time import time
     from os import sep
     desam = f"desam{sep}desam"
@@ -113,6 +130,11 @@ def main():
     print(f"pandas version finished in {round(checkpoint - start, 3)}s")
     lemma_scores(desam, morph_db, segments)
     print(f"classic version finished in {round(time() - checkpoint, 3)}s")
+    '''
+    from os import sep
+    morph_db = md.MorphDatabase("data/current.dic", "data/current.par")
+    k = freqlist_to_dataframe(f"data{sep}mu_theses_czech.freqlist", morph_db, limit=100)
+    pass
 
 
 if __name__ == "__main__":
