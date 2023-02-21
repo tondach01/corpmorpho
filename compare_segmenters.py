@@ -40,7 +40,8 @@ def get_segment_method(segmenter: str):
     return baseline
 
 
-def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase, segmenter: str = "", debug: bool = False) -> None:
+def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase,
+                    segmenter: str = "", debug: bool = False) -> None:
     """Tries to guess paradigm for each lemma in test_vocab given its segmentation (if given segmenter)."""
     if debug:
         log_file = sys.stdout
