@@ -1,10 +1,4 @@
-desam/train_desam
-desam/test_desam
-desam/tune_desam
-desam/desam_text.txt
-desam/train_tune_test.py
-desam/vert_to_prevert.py
-sentencepiece/*
-morfessor/*
-temp/*
+sentencepiece/
+morfessor/
+temp/
 .idea/
