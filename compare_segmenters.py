@@ -21,7 +21,7 @@ def get_segment_method(segmenter: str):
         if len(params) != 3:
             return baseline
         sp.SentencePieceTrainer.train(f'--input=..{sep}desam{sep}prevert_desam'
-                                      f'--model_prefix=sp --model_type={params[1]} --vocab_size={params[2]}'
+                                      f'--model_prefix=m --model_type={params[1]} --vocab_size={params[2]}'
                                       f'--user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
         m = sp.SentencePieceProcessor()
         m.load("sp.model")
