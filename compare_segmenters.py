@@ -24,7 +24,7 @@ def get_segment_method(segmenter: str):
                                       f' --model_prefix=m --model_type={params[1]} --vocab_size={params[2]}'
                                       f' --user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
         m = sp.SentencePieceProcessor()
-        m.load("sp.model")
+        m.load("m.model")
         return m.encode_as_pieces
     elif "morfessor" in segmenter:
         import morfessor as mo
@@ -77,6 +77,7 @@ def main():
         .split_vocabulary()
     train_md = md.MorphDatabase(train, f"..{sep}data{sep}current.par")
     segmented_guess(test, f"..{sep}desam{sep}desam", train_md, segmenter=seg, debug=debug)
+    os.chdir("..")
     print(f"finished in {round(time() - start)}s")
 
 
