@@ -15,7 +15,7 @@ def lemmas(corpus: str):
     corp.close()
 
 
-def corpus_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame:
+def lemmas_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame:
     frame = pd.DataFrame([x for x in lemmas(corpus)], columns=["lemma"])
     frame["paradigm"] = frame.lemma.apply(lambda x: morph_db.vocab.get(x, ""))
     frame["count"] = np.ones(len(frame))
@@ -101,9 +101,9 @@ def main():
     from os import sep
     desam = f"desam{sep}desam"
     morph_db = md.MorphDatabase("current.dic", "current.par")
-    word = "dlouhatánský"
+    word = "kámen"
     segments = [word[- i:] for i in range(1, len(word) + 1)]
-    df = corpus_to_dataframe(desam, morph_db)
+    df = lemmas_to_dataframe(desam, morph_db)
     start = time()
     # p = suffix_frequencies(desam, md.MorphDatabase("current.dic", "current.par"), "čka")
     # p = paradigm_frequencies(desam, md.MorphDatabase("current.dic", "current.par"))
