@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import morph_database as md
 from typing import Dict, List
+import pandas as pd
+import numpy as np
 
 
 def lemmas(corpus: str):
@@ -11,6 +13,18 @@ def lemmas(corpus: str):
             continue
         yield line.split("\t")[1]
     corp.close()
+
+
+def corpus_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame:
+    frame = pd.DataFrame([x for x in lemmas(corpus)], columns=["lemma"])
+    frame["paradigm"] = frame.lemma.apply(lambda x: morph_db.vocab.get(x, ""))
+    frame["count"] = np.ones(len(frame))
+    return frame[frame.paradigm != ""]
+
+
+def suffix_scores(suffix: str, frame: pd.DataFrame) -> Dict[str, int]:
+    filtered = frame[frame.lemma.apply(lambda x: x.endswith(suffix))].groupby(["paradigm"]).size().to_dict()
+    return {paradigm: len(suffix) * count for paradigm, count in filtered.items()}
 
 
 def paradigm_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str = "") -> Dict[str, int]:
@@ -78,12 +92,21 @@ def print_score(score: Dict[str, int]) -> None:
 def main():
     from time import time
     from os import sep
-    start = time()
     desam = f"desam{sep}desam"
+    morph_db = md.MorphDatabase("current.dic", "current.par")
+    word = "dlouhatánský"
+    segments = [word[i:] for i in range(len(word))]
+    df = corpus_to_dataframe(desam, morph_db)
+    start = time()
     # p = suffix_frequencies(desam, md.MorphDatabase("current.dic", "current.par"), "čka")
-    p = paradigm_frequencies(desam, md.MorphDatabase("current.dic", "current.par"))
-    print_score(p)
-    print(f"finished in {round(time() - start, 3)}s")
+    # p = paradigm_frequencies(desam, md.MorphDatabase("current.dic", "current.par"))
+    # print_score(p)
+    for suffix in segments:
+        k = suffix_scores(suffix, df)
+    checkpoint = time()
+    print(f"pandas version finished in {round(checkpoint - start, 3)}s")
+    lemma_scores(desam, morph_db, segments)
+    print(f"classic version finished in {round(time() - checkpoint, 3)}s")
 
 
 if __name__ == "__main__":
