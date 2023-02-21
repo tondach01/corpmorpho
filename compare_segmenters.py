@@ -54,7 +54,7 @@ def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase,
         for line in test:
             print(line.strip(), file=log_file)
             segments = segment(line.strip().split(":")[0])
-            score = g.guess_paradigm_from_lemma_seg(corpus, morph_db, segments)
+            score = g.guess_paradigm_from_lemma(segments, frame)
             paradigms = list(sorted(score, key=(lambda x: score[x]), reverse=True))
             print("\t" + ", ".join(paradigms), file=log_file)
     if not debug:
