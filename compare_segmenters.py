@@ -4,6 +4,7 @@ import sys
 
 import morph_database as md
 import guesser as g
+import db_stats as dbs
 from os import sep
 
 
@@ -47,6 +48,7 @@ def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase,
         log_file = sys.stdout
     else:
         log_file = open(f"..{sep}logs{sep}log_{segmenter}", "w", encoding="utf-8")
+    frame = dbs.lemmas_to_dataframe(corpus, morph_db)
     segment = get_segment_method(segmenter)
     with open(test_vocab, encoding="windows-1250") as test:
         for line in test:
