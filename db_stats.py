@@ -22,9 +22,16 @@ def corpus_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame
     return frame[frame.paradigm != ""]
 
 
-def suffix_scores(suffix: str, frame: pd.DataFrame) -> Dict[str, int]:
-    filtered = frame[frame.lemma.apply(lambda x: x.endswith(suffix))].groupby(["paradigm"]).size().to_dict()
-    return {paradigm: len(suffix) * count for paradigm, count in filtered.items()}
+def pandas_lemma_scores(segments: List[str], frame: pd.DataFrame) -> Dict[str, int]:
+    filtered = frame
+    scores = dict()
+    for suffix in segments:
+        filtered = filtered[filtered.lemma.apply(lambda x: x.endswith(suffix))]
+        if len(filtered) == 0:
+            return scores
+        for paradigm, count in filtered.groupby(["paradigm"]).size().to_dict().items():
+            scores[paradigm] = max(scores.get(paradigm, 0), len(suffix) * count)
+    return scores
 
 
 def paradigm_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str = "") -> Dict[str, int]:
@@ -95,17 +102,16 @@ def main():
     desam = f"desam{sep}desam"
     morph_db = md.MorphDatabase("current.dic", "current.par")
     word = "dlouhatánský"
-    segments = [word[i:] for i in range(len(word))]
+    segments = [word[- i:] for i in range(1, len(word) + 1)]
     df = corpus_to_dataframe(desam, morph_db)
     start = time()
     # p = suffix_frequencies(desam, md.MorphDatabase("current.dic", "current.par"), "čka")
     # p = paradigm_frequencies(desam, md.MorphDatabase("current.dic", "current.par"))
     # print_score(p)
-    for suffix in segments:
-        k = suffix_scores(suffix, df)
+    k = pandas_lemma_scores(segments, df)
     checkpoint = time()
     print(f"pandas version finished in {round(checkpoint - start, 3)}s")
-    lemma_scores(desam, morph_db, segments)
+    l = lemma_scores(desam, morph_db, segments)
     print(f"classic version finished in {round(time() - checkpoint, 3)}s")
 
 
