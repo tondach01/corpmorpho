@@ -100,7 +100,7 @@ def main():
     from time import time
     from os import sep
     desam = f"desam{sep}desam"
-    morph_db = md.MorphDatabase("current.dic", "current.par")
+    morph_db = md.MorphDatabase("data/current.dic", "data/current.par")
     word = "kámen"
     segments = [word[- i:] for i in range(1, len(word) + 1)]
     df = lemmas_to_dataframe(desam, morph_db)

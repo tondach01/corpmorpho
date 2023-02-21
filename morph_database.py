@@ -153,22 +153,22 @@ class MorphDatabase:
             if not found:
                 self.paradigms[paradigm]["<suffix>"] = longest_fitting_suffix(paradigm.split("_")[0], suffices)
 
-    def split_vocabulary(self, ratio: int = 10, filename: str = "vocab",
-                         a_suffix: str = "_a", b_suffix: str = "_b") -> Tuple[str, str]:
+    def split_vocabulary(self, ratio: int = 10, filename: str = "", path: str = "",
+                         train_suffix: str = "_train", test_suffix: str = "_test") -> Tuple[str, str]:
         """Split the database's vocabulary into two separate files of sizes
-        approx. 1 : <ratio> - 1, returns their names"""
-        a_file = open(filename + a_suffix, "w", encoding="windows-1250")
-        b_file = open(filename + b_suffix, "w", encoding="windows-1250")
+        approx. 1 : <ratio> - 1, returns their paths"""
+        train = open(path + filename + train_suffix, "w", encoding="windows-1250")
+        test = open(path + filename + test_suffix, "w", encoding="windows-1250")
         i = 0
         for lemma, paradigm in self.vocab.items():
             if (i % ratio != 0) or lemma == paradigm.split("_")[0]:
-                print(f"{lemma}:{paradigm}", file=a_file)
+                print(f"{lemma}:{paradigm}", file=train)
             else:
-                print(f"{lemma}:{paradigm}", file=b_file)
+                print(f"{lemma}:{paradigm}", file=test)
             i += 1
-        a_file.close()
-        b_file.close()
-        return filename + a_suffix, filename + b_suffix
+        train.close()
+        test.close()
+        return path + filename + train_suffix, path + filename + test_suffix
 
 
 def longest_fitting_suffix(paradigm: str, suffices: FORMS) -> str:
@@ -263,7 +263,7 @@ def paradigm_frame(k: str) -> Dict[str, Any]:
 
 
 def main() -> MorphDatabase:
-    return MorphDatabase("current.dic", "current.par")
+    return MorphDatabase("data/current.dic", "data/current.par")
 
 
 if __name__ == "__main__":

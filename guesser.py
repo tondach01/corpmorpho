@@ -36,7 +36,7 @@ def main():
     start = time()
     desam = f"desam{sep}desam"
     word = "pohrobkem"
-    g = guess_paradigm(word, desam, md.MorphDatabase("current.dic", "current.par"))
+    g = guess_paradigm(word, desam, md.MorphDatabase("data/current.dic", "data/current.par"))
     db_stats.print_score(g)
     print(f"finished in {round(time()-start, 3)}s")
 
