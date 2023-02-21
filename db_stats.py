@@ -108,10 +108,10 @@ def main():
     # p = suffix_frequencies(desam, md.MorphDatabase("current.dic", "current.par"), "čka")
     # p = paradigm_frequencies(desam, md.MorphDatabase("current.dic", "current.par"))
     # print_score(p)
-    k = pandas_lemma_scores(segments, df)
+    pandas_lemma_scores(segments, df)
     checkpoint = time()
     print(f"pandas version finished in {round(checkpoint - start, 3)}s")
-    l = lemma_scores(desam, morph_db, segments)
+    lemma_scores(desam, morph_db, segments)
     print(f"classic version finished in {round(time() - checkpoint, 3)}s")
 
 
