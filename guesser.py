@@ -2,7 +2,7 @@
 import os
 import db_stats as dbs
 import morph_database as md
-from typing import Dict, List
+from typing import Dict, List, TextIO
 
 
 def guess_paradigm(segments: List[str], morph_db, frame, only_lemmas: bool = False) -> Dict[str, int]:
@@ -47,32 +47,30 @@ def get_segment_method(segmenter: str):
     return baseline
 
 
-def main(infile: str = None, lemmatized: bool = False, segmenter: str = ""):
+def main(source: TextIO, lemmatized: bool = False, segmenter: str = ""):
     import sys
-    if infile is None:
-        source = sys.stdin
-    elif not os.path.exists(infile):
-        print(f"File {infile} not found, using stdin", file=sys.stderr)
-        source = sys.stdin
-    else:
-        source = open(infile, "r")
     morph_db = md.MorphDatabase(f"..{os.sep}data{os.sep}current.dic", f"..{os.sep}data{os.sep}current.par")
-    frame = dbs.lemmas_to_dataframe(f"..{os.sep}desam{os.sep}desam", morph_db)
+    corpus = open(f"..{os.sep}desam{os.sep}desam", encoding="utf-8")
+    frame = dbs.lemmas_to_dataframe(corpus, morph_db)
+    corpus.close()
     segment = get_segment_method(segmenter)
-    word = source.readline().strip()
+    word = source.readline()
+    word = word.strip()
     while word:
         scores = guess_paradigm(segment(word), morph_db, frame, lemmatized)
         # TODO output scores
 
         dbs.print_scores(scores)
 
-        word = source.readline().strip()
+        word = source.readline()
+        word = word.strip()
     if source != sys.stdin:
         source.close()
 
 
 if __name__ == "__main__":
     import argparse
+    import sys
     parser = argparse.ArgumentParser(description="Guesses the paradigm of given word")
     parser.add_argument("-l", "--lemma", action="store_true", help="word is given in its base form", default=False)
     parser.add_argument("-f", "--infile", help="file from which take the words for guessing (one per line), "
@@ -84,5 +82,8 @@ if __name__ == "__main__":
     if not os.path.exists(f".{os.sep}temp"):
         os.mkdir(f".{os.sep}temp")
     os.chdir(f".{os.sep}temp")
-    main(args.infile, args.lemma, args.use_segmenter)
+    source = sys.stdin if args.infile is None else open(args.infile, encoding="utf-8")
+    main(source, args.lemma, args.use_segmenter)
+    if args.infile is None:
+        source.close()
     os.chdir("..")
