@@ -41,7 +41,7 @@ def freqlist_to_dataframe(freqlist: TextIO, limit: int = -1, threshold_function=
     return pd.DataFrame(data=data, columns=["word", "lemma", "frequency"])
 
 
-def lemma_scores(segments: List[str], frame: pd.DataFrame) -> Dict[str, int]:
+def lemma_scores(segments: List[str], frame: pd.DataFrame, morph_db: md.MorphDatabase) -> Dict[str, int]:
     filtered = frame
     scores = dict()
     for suffix in segments:
@@ -53,7 +53,7 @@ def lemma_scores(segments: List[str], frame: pd.DataFrame) -> Dict[str, int]:
     return scores
 
 
-def word_scores(segments: List[str], frame: pd.DataFrame) -> Dict[str, int]:
+def word_scores(segments: List[str], frame: pd.DataFrame, morph_db: md.MorphDatabase) -> Dict[str, int]:
     # TODO
     pass
 
