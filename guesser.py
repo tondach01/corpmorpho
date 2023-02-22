@@ -59,14 +59,14 @@ def main(infile: str = None, lemmatized: bool = False, segmenter: str = ""):
     morph_db = md.MorphDatabase(f"..{os.sep}data{os.sep}current.dic", f"..{os.sep}data{os.sep}current.par")
     frame = dbs.lemmas_to_dataframe(f"..{os.sep}desam{os.sep}desam", morph_db)
     segment = get_segment_method(segmenter)
-    word = source.readline()
+    word = source.readline().strip()
     while word:
         scores = guess_paradigm(segment(word), morph_db, frame, lemmatized)
         # TODO output scores
 
         dbs.print_score(scores)
 
-        word = source.readline()
+        word = source.readline().strip()
     if source != sys.stdin:
         source.close()
 
