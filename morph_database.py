@@ -69,24 +69,6 @@ class MorphDatabase:
             return lemma
         return lemma[:-common_suffix]
 
-    def word_form(self, lemma: str, tag_part: str) -> Set[str]:
-        """Returns all forms of given lemma which tags are matching tag_part"""
-        found_forms = set()
-        for form in self.all_forms(lemma).keys():
-            for tag in form:
-                if tag_part in tag:
-                    found_forms.add(form)
-        return found_forms
-
-    def lemma_tag(self, form: str) -> List[Dict[str, str]]:
-        """Finds all possible lemma-tag pairs for gives word form"""
-        found_lt = []
-        for lemma, paradigm in self.vocab.items():
-            root = self.word_root(lemma, paradigm)
-            if form.startswith(root):
-                self.add_similar_forms(root, paradigm, form, found_lt)
-        return found_lt
-
     def add_similar_forms(self, root: str, paradigm: str, form: str, found_lt: List[Dict[str, str]]) -> None:
         """Searches through single paradigm and appends all lemma-tag pairs matching form"""
         for paradigm_form, tags in self.paradigms[paradigm].items():
@@ -98,45 +80,6 @@ class MorphDatabase:
     def find_paradigm(self, lemma: str) -> str:
         """Returns paradigm for given lemma or '' if lemma is not in vocabulary"""
         return self.vocab.get(lemma, "")
-
-    def has_full_paradigm(self, lemma: str, k_tag: int) -> bool:
-        """Checks whether tags present in lemma form a full paradigm"""
-        all_tags = []
-        for tags in self.all_forms(lemma).values():
-            all_tags.extend(tags)
-        if not all_tags:
-            return False
-        needed = []
-        if k_tag == 1:
-            for i in range(1, 8):
-                needed.extend([f"nSc{i}", f"nPc{i}"])
-            for tag in all_tags:
-                if tag[-2] != "c":
-                    continue
-                t = tag[-4:]
-                if t in needed:
-                    needed.remove(t)
-        elif k_tag == 2:
-            for i in range(1, 8):
-                needed.extend([f"gMnSc{i}", f"gMnPc{i}", f"gFnSc{i}", f"gFnPc{i}", f"gNnSc{i}", f"gNnPc{i}"])
-            for tag in all_tags:
-                if tag[-4] != "c":
-                    continue
-                t = tag[-8:-2]
-                if t in needed:
-                    needed.remove(t)
-        elif k_tag == 5:
-            for i in range(1, 4):
-                needed.extend([f"p{i}nS", f"p{i}nP"])
-            for tag in all_tags:
-                if tag[-2] != "n":
-                    continue
-                t = tag[-4:]
-                if t in needed:
-                    needed.remove(t)
-        else:
-            return True
-        return not needed
 
     def paradigm_roots(self) -> None:
         """Assigns suffix to each paradigm in database"""
@@ -195,14 +138,6 @@ def translate_morph_db(par_file: str) -> PARADIGMS_TAIL_GROUPS:
     return translated
 
 
-def compress_word(lemma: str, word: str) -> str:
-    """Compress word form to format <pop from lemma>|<append to remainder>"""
-    common = lemma
-    while not word.startswith(common):
-        common = common[:-1]
-    return f"{lemma[len(common):]}|{word[len(common):]}"
-
-
 def vocabulary(dic_file: str) -> VOCABULARY:
     """Creates vocabulary from data in dictionary file"""
     vocab = dict()
@@ -245,21 +180,6 @@ def read_paradigms(par_file: str) -> Tuple[PARADIGMS_TAIL_GROUPS, TAILS]:
 def correct_encoding(line: str) -> str:
     """Replaces wrongly encodes characters from dictionary and paradigm files"""
     return line.replace("ą", "š").replace("ľ", "ž").replace("»", "ť").replace("®", "Ž").replace("©", "Š")
-
-
-def paradigm_frame(k: str) -> Dict[str, Any]:
-    """Creates frame with forms necessary for full paradigm (POS-specific)"""
-    if k in "134":
-        return {f"n{number}": {f"c{case}": set() for case in range(1, 8)} for number in "SP"}
-    elif k == "2":
-        return {f"g{gender}": {f"n{number}": {f"c{case}": set() for case in range(1, 8)}
-                               for number in "SP"} for gender in "MIFN"}
-    elif k == "5":
-        frame = {f"n{number}": {f"p{person}": set() for person in range(1, 4)} for number in "SP"}
-        for number in "SP":
-            frame[f"n{number}"].update({f"m{mode}": set() for mode in "RANS"})
-        return frame
-    return dict()
 
 
 def main() -> MorphDatabase:
