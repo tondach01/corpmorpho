@@ -8,7 +8,7 @@ from typing import Dict, List
 def guess_paradigm(segments: List[str], morph_db, frame, only_lemmas: bool = False) -> Dict[str, int]:
     """Guesses the probabilities of paradigms for given word and its sub-word segmentation,
     bigger matched suffixes are prioritized. Note: very slow for non-lemmatized word"""
-    search_func = dbs.pandas_lemma_scores
+    search_func = dbs.lemma_scores
     # TODO function for non-lemmatized
     return search_func(["".join(segments[-i:]) for i in range(1, len(segments) + 1)], frame)
 
