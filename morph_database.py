@@ -113,6 +113,14 @@ class MorphDatabase:
         test.close()
         return path + filename + train_suffix, path + filename + test_suffix
 
+    def possible_paradigm(self, segments: List[str]):
+        """
+        For given segmented word, finds all paradigms containing form with common suffix. All others
+        are possible too if using empty suffix, but this is handled elsewhere.
+        """
+        # TODO
+        pass
+
 
 def longest_fitting_suffix(paradigm: str, suffices: FORMS) -> str:
     """Returns that longest one from suffixes which paradigm ends with"""
