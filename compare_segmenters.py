@@ -36,21 +36,20 @@ def segmented_guess(test_vocab: str, corpus: TextIO, morph_db: md.MorphDatabase,
 
 def main():
     from time import time
-    from sys import argv
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--segmenter", default="")
+    parser.add_argument("-d", "--debug", action="store_true", default=False)
+    args = parser.parse_args()
     if not os.path.exists(f".{sep}temp"):
         os.mkdir(f".{sep}temp")
     os.chdir(f".{sep}temp")
     start = time()
-    debug = False
-    if "-d" in argv:
-        debug = True
-        argv.remove("-d")
-    seg = "" if len(argv) < 2 else argv[1]
     train, test = md.MorphDatabase(f"..{sep}data{sep}current.dic", f"..{sep}data{sep}current.par")\
         .split_vocabulary()
     train_md = md.MorphDatabase(train, f"..{sep}data{sep}current.par")
     corpus = open(f"..{sep}desam{sep}desam", encoding="utf-8")
-    segmented_guess(test, corpus, train_md, segmenter=seg, debug=debug)
+    segmented_guess(test, corpus, train_md, segmenter=args.segmenter, debug=args.debug)
     corpus.close()
     os.chdir("..")
     print(f"finished in {round(time() - start)}s")
