@@ -7,12 +7,13 @@ import numpy as np
 
 def lemmas(corpus: TextIO):
     """Generates all lemmas in given corpus"""
-    line = corpus.readline().strip()
+    line = corpus.readline()
+    line = line.strip()
     while line:
-        if len(line.split("\t")) != 3:
-            continue
-        yield line.split("\t")[1]
-        line = corpus.readline().strip()
+        if len(line.split("\t")) == 3:
+            yield line.split("\t")[1]
+        line = corpus.readline()
+        line = line.strip()
 
 
 def lemmas_to_dataframe(corpus: TextIO, morph_db: md.MorphDatabase) -> pd.DataFrame:
@@ -27,14 +28,16 @@ def freqlist_to_dataframe(freqlist: TextIO, limit: int = -1, threshold_function=
     Amount of loaded data can be limited (default -1 = unlimited). Rows to load can be filtered with threshold
     function List[str] -> bool."""
     data = []
-    row = freqlist.readline().strip()
+    row = freqlist.readline()
+    row = row.strip()
     while row:
         if len(data) == limit:
             break
         elements = row.split()
         if len(elements) >= 3 and (threshold_function is None or threshold_function(elements)):
             data.append([elements[0], elements[1], int(elements[2])])
-        row = freqlist.readline().strip()
+        row = freqlist.readline()
+        row = row.strip()
     return pd.DataFrame(data=data, columns=["word", "lemma", "frequency"])
 
 
