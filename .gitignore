@@ -2,3 +2,4 @@ sentencepiece/
 morfessor/
 temp/
 .idea/
+unit_testing.py
