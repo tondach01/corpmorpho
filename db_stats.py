@@ -22,9 +22,10 @@ def lemmas_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame
     return frame[frame.paradigm != ""]
 
 
-def freqlist_to_dataframe(freqlist: str, morph_db: md.MorphDatabase, limit: int = -1) -> pd.DataFrame:
+def freqlist_to_dataframe(freqlist: str, limit: int = -1, threshold_function=None) -> pd.DataFrame:
     """Loads data from given frequency list to dataframe. The wordlist should be in format 'word lemma frequency'.
-    Amount of loaded data can be limited (default -1 = unlimited)."""
+    Amount of loaded data can be limited (default -1 = unlimited). Rows to load can be filtered with threshold
+    function List[str] -> bool."""
     data = []
     with open(freqlist) as fl:
         row = fl.readline()
@@ -32,8 +33,8 @@ def freqlist_to_dataframe(freqlist: str, morph_db: md.MorphDatabase, limit: int 
             if len(data) == limit:
                 break
             elements = row.split()
-            if len(elements) >= 3:
-                data.append(elements[:3])
+            if len(elements) >= 3 and (threshold_function is None or threshold_function(elements)):
+                data.append([elements[0], elements[1], int(elements[2])])
             row = fl.readline()
     return pd.DataFrame(data=data, columns=["word", "lemma", "frequency"])
 
@@ -48,61 +49,6 @@ def pandas_lemma_scores(segments: List[str], frame: pd.DataFrame) -> Dict[str, i
         for paradigm, count in filtered.groupby(["paradigm"]).size().to_dict().items():
             scores[paradigm] = max(scores.get(paradigm, 0), len(suffix) * count)
     return scores
-
-
-def paradigm_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str = "") -> Dict[str, int]:
-    """Computes frequencies of lemmas belonging to single paradigm in corpus. If given suffix,
-    limits the search only to lemmas ending with it."""
-    freqs = dict()
-    for lemma in lemmas(corpus):
-        if not lemma.endswith(suffix) or lemma not in morph_db.vocab.keys():
-            continue
-        paradigm = morph_db.vocab[lemma]
-        freqs[paradigm] = freqs.get(paradigm, 0) + 1
-    return freqs
-
-
-def lemma_scores(corpus: str, morph_db: md.MorphDatabase, segments: List[str]) -> Dict[str, int]:
-    """Computes frequency scores of whole segmented word from given corpora"""
-    freqs = dict()
-    for lemma in lemmas(corpus):
-        if lemma not in morph_db.vocab.keys():
-            continue
-        paradigm = morph_db.vocab[lemma]
-        for segment in segments:
-            segment = segment.lstrip("\u2581")
-            if not lemma.endswith(segment):
-                break
-            freqs[segment] = freqs.get(segment, dict())
-            freqs[segment][paradigm] = freqs[segment].get(paradigm, 0) + 1
-    final_freqs = dict()
-    for segment, scores in freqs.items():
-        for paradigm, score in scores.items():
-            final_freqs[paradigm] = max(final_freqs.get(paradigm, 0), score * len(segment))
-    return final_freqs
-
-
-def suffix_frequencies(corpus: str, morph_db: md.MorphDatabase, suffix: str) -> Dict[str, int]:
-    """Computes frequencies of paradigms containing given suffix (not only in lemma)"""
-    freqs = dict()
-    non_matching = set()
-    for lemma in lemmas(corpus):
-        if lemma not in morph_db.vocab.keys():
-            continue
-        paradigm = morph_db.vocab[lemma]
-        if paradigm in freqs.keys():
-            freqs[paradigm] += 1
-            continue
-        elif paradigm in non_matching:
-            continue
-        found = False
-        for form in morph_db.all_forms_with_paradigm(paradigm, paradigm, informal=False).keys():
-            if form.endswith(suffix) and not found:
-                freqs[paradigm] = freqs.get(paradigm, 0) + 1
-                found = True
-        if not found:
-            non_matching.add(paradigm)
-    return freqs
 
 
 def print_score(score: Dict[str, int]) -> None:
