@@ -53,8 +53,24 @@ def lemma_scores(segments: List[str], frame: pd.DataFrame) -> Dict[str, int]:
     return scores
 
 
+def word_scores(segments: List[str], frame: pd.DataFrame) -> Dict[str, int]:
+    # TODO
+    pass
+
+
+def word_similarity(word: str, other: str) -> int:
+    """Finds similarity of two words based on longest common substring"""
+    max_similarity = 0
+    for start in range(len(word)):
+        for end in range(start, len(word) + 1):
+            if end - start > max_similarity and word[start:end] in other:
+                max_similarity = end - start
+    return max_similarity
+
+
 def print_scores(scores: Dict[str, int]) -> None:
     """Prints paradigms in descending order (by their frequency scores)"""
+    # TODO enhance
     for paradigm in sorted(scores, key=(lambda x: scores[x]), reverse=True):
         print(f"{paradigm}: {scores[paradigm]}")
     print()
