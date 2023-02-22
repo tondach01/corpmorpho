@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 import morph_database as md
-from typing import Dict, List
+from typing import Dict, List, TextIO
 import pandas as pd
 import numpy as np
 
 
-def lemmas(corpus: str):
+def lemmas(corpus: TextIO):
     """Generates all lemmas in given corpus"""
-    corp = open(corpus, encoding="utf-8")
-    for line in corp:
+    line = corpus.readline().strip()
+    while line:
         if len(line.split("\t")) != 3:
             continue
         yield line.split("\t")[1]
-    corp.close()
+        line = corpus.readline().strip()
 
 
-def lemmas_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame:
+def lemmas_to_dataframe(corpus: TextIO, morph_db: md.MorphDatabase) -> pd.DataFrame:
     frame = pd.DataFrame([x for x in lemmas(corpus)], columns=["lemma"])
     frame["paradigm"] = frame.lemma.apply(lambda x: morph_db.vocab.get(x, ""))
     frame["count"] = np.ones(len(frame))
     return frame[frame.paradigm != ""]
 
 
-def freqlist_to_dataframe(freqlist: str, limit: int = -1, threshold_function=None) -> pd.DataFrame:
+def freqlist_to_dataframe(freqlist: TextIO, limit: int = -1, threshold_function=None) -> pd.DataFrame:
     """Loads data from given frequency list to dataframe. The wordlist should be in format 'word lemma frequency'.
     Amount of loaded data can be limited (default -1 = unlimited). Rows to load can be filtered with threshold
     function List[str] -> bool."""
