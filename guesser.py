@@ -33,6 +33,34 @@ def main(infile: str = None, lemmatized: bool = False, segment: str = ""):
     pass
 
 
+def get_segment_method(segmenter: str):
+    baseline = (lambda x: list(c for c in x))
+    if "sentencepiece" in segmenter:
+        import sentencepiece as sp
+        params = segmenter.split("_")
+        if len(params) != 3:
+            return baseline
+        sp.SentencePieceTrainer.train(f'--input=..{os.sep}desam{os.sep}prevert_desam'
+                                      f' --model_prefix=m --model_type={params[1]} --vocab_size={params[2]}'
+                                      f' --user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
+        m = sp.SentencePieceProcessor()
+        m.load("m.model")
+        return m.encode_as_pieces
+    elif "morfessor" in segmenter:
+        import morfessor as mo
+        params = segmenter.split("_")
+        max_epochs = 4
+        if len(params) == 2 and params[1].isdigit():
+            max_epochs = int(params[1])
+        io = mo.MorfessorIO()
+        train_data = list(io.read_corpus_file(f"..{os.sep}desam{os.sep}prevert_desam"))
+        model = mo.BaselineModel()
+        model.load_data(train_data, count_modifier=lambda x: 1)
+        model.train_batch(algorithm="viterbi", max_epochs=max_epochs)
+        return lambda x: model.viterbi_segment(x)[0]
+    return baseline
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Guesses the paradigm of given word")
