@@ -47,8 +47,7 @@ def get_segment_method(segmenter: str):
     return baseline
 
 
-def main(infile: str = None, lemmatized: bool = False, segment: str = ""):
-    # TODO
+def main(infile: str = None, lemmatized: bool = False, segmenter: str = ""):
     import sys
     if infile is None:
         source = sys.stdin
@@ -58,8 +57,18 @@ def main(infile: str = None, lemmatized: bool = False, segment: str = ""):
     else:
         source = open(infile, "r")
     morph_db = md.MorphDatabase(f"..{os.sep}data{os.sep}current.dic", f"..{os.sep}data{os.sep}current.par")
-    scores = guess_paradigm(get_segment_method(segment), morph_db,
-                            dbs.lemmas_to_dataframe(f"..{os.sep}desam{os.sep}desam", morph_db), lemmatized)
+    frame = dbs.lemmas_to_dataframe(f"..{os.sep}desam{os.sep}desam", morph_db)
+    segment = get_segment_method(segmenter)
+    word = source.readline()
+    while word:
+        scores = guess_paradigm(segment(word), morph_db, frame, lemmatized)
+        # TODO output scores
+
+        dbs.print_score(scores)
+
+        word = source.readline()
+    if source != sys.stdin:
+        source.close()
 
 
 if __name__ == "__main__":
