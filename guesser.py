@@ -64,7 +64,7 @@ def main(infile: str = None, lemmatized: bool = False, segmenter: str = ""):
         scores = guess_paradigm(segment(word), morph_db, frame, lemmatized)
         # TODO output scores
 
-        dbs.print_score(scores)
+        dbs.print_scores(scores)
 
         word = source.readline().strip()
     if source != sys.stdin:
