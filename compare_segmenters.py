@@ -49,8 +49,9 @@ def main():
     train, test = md.MorphDatabase(f"..{sep}data{sep}current.dic", f"..{sep}data{sep}current.par")\
         .split_vocabulary()
     train_md = md.MorphDatabase(train, f"..{sep}data{sep}current.par")
-    segmented_guess(test, open(f"..{sep}desam{sep}desam", encoding="windows-1250"),
-                    train_md, segmenter=seg, debug=debug)
+    corpus = open(f"..{sep}desam{sep}desam", encoding="utf-8")
+    segmented_guess(test, corpus, train_md, segmenter=seg, debug=debug)
+    corpus.close()
     os.chdir("..")
     print(f"finished in {round(time() - start)}s")
 
