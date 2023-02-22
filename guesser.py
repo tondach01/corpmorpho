@@ -48,7 +48,6 @@ def get_segment_method(segmenter: str):
 
 
 def main(source: TextIO, lemmatized: bool = False, segmenter: str = ""):
-    import sys
     morph_db = md.MorphDatabase(f"..{os.sep}data{os.sep}current.dic", f"..{os.sep}data{os.sep}current.par")
     corpus = open(f"..{os.sep}desam{os.sep}desam", encoding="utf-8")
     frame = dbs.lemmas_to_dataframe(corpus, morph_db)
@@ -58,14 +57,9 @@ def main(source: TextIO, lemmatized: bool = False, segmenter: str = ""):
     word = word.strip()
     while word:
         scores = guess_paradigm(segment(word), morph_db, frame, lemmatized)
-        # TODO output scores
-
         dbs.print_scores(scores)
-
         word = source.readline()
         word = word.strip()
-    if source != sys.stdin:
-        source.close()
 
 
 if __name__ == "__main__":
