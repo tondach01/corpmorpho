@@ -17,22 +17,6 @@ class MorphDatabase:
         self.paradigms = paradigm_db(par_file)
         self.paradigm_suffixes()
 
-    def full_database(self) -> MORPH_DATABASE:
-        """Returns dictionary of words and all their forms and frequencies"""
-        database = dict()
-        for lemma, paradigm in self.vocab.items():
-            self.add_lemma_forms(lemma, paradigm, database)
-        return database
-
-    def add_lemma_forms(self, lemma: str, paradigm: str, database: MORPH_DATABASE) -> None:
-        """Constructs all forms for given lemma, assigns them frequency 0 and writes them to database"""
-        database[lemma] = dict()
-        forms = self.all_forms_with_paradigm(lemma, paradigm)
-        for form in forms.keys():
-            database[lemma][form] = dict()
-            for tag in forms[form]:
-                database[lemma][form][tag] = 0
-
     def all_forms(self, lemma: str) -> FORMS:
         """Constructs all forms for given lemma"""
         paradigm = self.find_paradigm(lemma) if lemma not in self.paradigms.keys() else lemma
