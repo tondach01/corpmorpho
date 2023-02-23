@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+"""This file contains tools for handling queries on corpora."""
 import morph_database as md
-from typing import Dict, List, TextIO
+from typing import Dict, List, TextIO, Set
 import pandas as pd
 import numpy as np
 
@@ -56,6 +56,15 @@ def lemma_scores(segments: List[str], frame: pd.DataFrame, morph_db: md.MorphDat
 def word_scores(segments: List[str], frame: pd.DataFrame, morph_db: md.MorphDatabase) -> Dict[str, int]:
     # TODO
     pass
+
+
+def occurring_forms(word_forms: Set[str], frame: pd.DataFrame) -> Set[str]:
+    """From given forms of a word, returns those that occur in given dataframe."""
+    found = set()
+    for form in word_forms:
+        if form in frame.word:
+            found.add(form)
+    return found
 
 
 def word_similarity(word: str, other: str) -> int:
