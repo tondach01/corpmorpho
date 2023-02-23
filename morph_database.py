@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from typing import Tuple, Dict, List, Set, Union, Any
+from typing import Tuple, Dict, List, Union
 
 TAILS = Dict[str, List[Tuple[str, List[str]]]]
 FORMS = Dict[str, Union[str, List[str]]]
