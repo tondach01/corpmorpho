@@ -6,14 +6,34 @@ import numpy as np
 
 
 def lemmas(corpus: TextIO):
-    """Generates all lemmas in given corpus"""
+    """Generates all lemmas from given corpus."""
+    for word in corpus_generator(corpus, lemmas=True):
+        yield word
+
+
+def corpus_generator(corpus: TextIO, lemmas: bool):
+    """Generates all desired features (words/lemmas) from given corpus."""
     line = corpus.readline()
     line = line.strip()
     while line:
         if len(line.split("\t")) == 3:
-            yield line.split("\t")[1]
+            yield line.split("\t")[1 if lemmas else 0]
         line = corpus.readline()
         line = line.strip()
+
+
+def words(corpus: TextIO):
+    """Generates all words from given corpus."""
+    for word in corpus_generator(corpus, lemmas=False):
+        yield word
+
+
+def words_to_dataframe(corpus: TextIO, morph_db: md.MorphDatabase) -> pd.DataFrame:
+    """Converts all words from given corpus to dataframe."""
+    frame = pd.DataFrame([[x for x in words(corpus)], [x for x in lemmas(corpus)]], columns=["word", "lemma"])
+    frame["paradigm"] = frame.lemma.apply(lambda x: morph_db.vocab.get(x, ""))
+    frame["count"] = np.ones(len(frame))
+    return frame[frame.paradigm != ""]
 
 
 def lemmas_to_dataframe(corpus: TextIO, morph_db: md.MorphDatabase) -> pd.DataFrame:
