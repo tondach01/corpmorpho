@@ -33,14 +33,14 @@ def words_to_dataframe(corpus: TextIO, morph_db: md.MorphDatabase) -> pd.DataFra
     frame = pd.DataFrame([[x for x in words(corpus)], [x for x in lemmas(corpus)]], columns=["word", "lemma"])
     frame["paradigm"] = frame.lemma.apply(lambda x: morph_db.vocab.get(x, ""))
     frame["count"] = np.ones(len(frame))
-    return frame[frame.paradigm != ""]
+    return frame
 
 
 def lemmas_to_dataframe(corpus: TextIO, morph_db: md.MorphDatabase) -> pd.DataFrame:
     frame = pd.DataFrame([x for x in lemmas(corpus)], columns=["lemma"])
     frame["paradigm"] = frame.lemma.apply(lambda x: morph_db.vocab.get(x, ""))
     frame["count"] = np.ones(len(frame))
-    return frame[frame.paradigm != ""]
+    return frame
 
 
 def freqlist_to_dataframe(freqlist: TextIO, limit: int = -1, threshold_function=None) -> pd.DataFrame:
@@ -62,7 +62,7 @@ def freqlist_to_dataframe(freqlist: TextIO, limit: int = -1, threshold_function=
 
 
 def lemma_scores(segments: List[str], frame: pd.DataFrame, morph_db: md.MorphDatabase) -> Dict[str, int]:
-    filtered = frame
+    filtered = frame[frame.paradigm != ""]
     scores = dict()
     for suffix in segments:
         filtered = filtered[filtered.lemma.apply(lambda x: x.endswith(suffix))]
