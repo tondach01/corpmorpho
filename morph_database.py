@@ -24,6 +24,16 @@ class MorphDatabase:
             return self.all_forms_with_paradigm(lemma, paradigm)
         return dict()
 
+    def only_forms(self, lemma: str, paradigm: str) -> Set[str]:
+        """Returns set of all forms for given lemma and paradigm."""
+        forms = set()
+        root = self.word_root(lemma, paradigm)
+        for suffix in self.paradigms[paradigm].keys():
+            if suffix == "<suffix>":
+                continue
+            forms.add(root + suffix)
+        return forms
+
     def all_forms_with_paradigm(self, lemma: str, paradigm: str) -> FORMS:
         """Constructs all forms for given lemma when its paradigm is known"""
         forms = dict()
@@ -36,7 +46,7 @@ class MorphDatabase:
 
     def word_root(self, lemma: str, paradigm: str) -> str:
         """Returns the morphological root (resp. prefixes+root) for given lemma"""
-        return lemma[:-len(self.paradigms[paradigm]["<suffix>"])]
+        return lemma[:-len(self.paradigms[paradigm]["<suffix>"].split("_")[0])]
 
     def add_similar_forms(self, root: str, paradigm: str, form: str, found_lt: List[Dict[str, str]]) -> None:
         """Searches through single paradigm and appends all lemma-tag pairs matching form"""

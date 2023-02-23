@@ -2,7 +2,7 @@
 import os
 import db_stats as dbs
 import morph_database as md
-from typing import Dict, List, TextIO
+from typing import Dict, List, TextIO, Tuple
 
 
 def guess_paradigm(segments: List[str], morph_db, frame, only_lemmas: bool = False) -> Dict[str, int]:
@@ -18,12 +18,14 @@ def guess_paradigm_from_lemma(segments: List[str], frame) -> Dict[str, int]:
     return guess_paradigm(segments, None, frame, only_lemmas=True)
 
 
-def guess_lemma(segments: List[str], morph_db: md.MorphDatabase, frame) -> List[str]:
+def guess_lemma(segments: List[str], morph_db: md.MorphDatabase, frame) -> List[Tuple[int, str]]:
+    """For given segmented word, finds possible lemmas and tries to sort them by their likeliness."""
     scores = []
     for (matching_paradigm, lemma) in morph_db.matching_suffixes(["".join(segments[-i:]) for i in range(1, len(segments) + 1)]):
-        scores.append((matching_paradigm, dbs.occurring_forms(morph_db.all_forms_with_paradigm(matching_paradigm))))
-    # TODO
-    pass
+        scores.append((len(dbs.occurring_forms(morph_db.only_forms(lemma, matching_paradigm), frame)),
+                       matching_paradigm))
+    scores.sort(reverse=True)
+    return scores
 
 
 def get_segment_method(seg_tool: str):
