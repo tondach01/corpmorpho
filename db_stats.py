@@ -62,7 +62,7 @@ def occurring_forms(word_forms: Set[str], frame: pd.DataFrame) -> Set[str]:
     """From given forms of a word, returns those that occur in given dataframe."""
     found = set()
     for form in word_forms:
-        if form in frame.word:
+        if not frame[frame.word == form].empty:
             found.add(form)
     return found
 
