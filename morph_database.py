@@ -14,8 +14,8 @@ class MorphDatabase:
 
     def __init__(self, dic_file: str, par_file: str):
         self.vocab = vocabulary(dic_file)
-        self.paradigms = translate_morph_db(par_file)
-        self.paradigm_roots()
+        self.paradigms = paradigm_db(par_file)
+        self.paradigm_suffixes()
 
     def full_database(self) -> MORPH_DATABASE:
         """Returns dictionary of words and all their forms and frequencies"""
@@ -81,20 +81,12 @@ class MorphDatabase:
         """Returns paradigm for given lemma or '' if lemma is not in vocabulary"""
         return self.vocab.get(lemma, "")
 
-    def paradigm_roots(self) -> None:
-        """Assigns suffix to each paradigm in database"""
+    def paradigm_suffixes(self) -> None:
+        """Assigns suffix (part of word to be cut when creating other forms) to each paradigm in database."""
         for paradigm, suffices in self.paradigms.items():
-            found = False
-            for suffix, tags in suffices.items():
-                for tag in tags:
-                    if ("c1" in tag and "nS" in tag) or "mF" in tag:
-                        self.paradigms[paradigm]["<suffix>"] = suffix
-                        found = True
-                        break
-                if found:
-                    break
-            if not found:
-                self.paradigms[paradigm]["<suffix>"] = longest_fitting_suffix(paradigm.split("_")[0], suffices)
+            lemma = paradigm.split("_", 1)[0]
+            # keys() iterates in insertion order
+            self.paradigms[paradigm]["<suffix>"] = paradigm[lemma.rfind(list(suffices.keys())[0]):]
 
     def split_vocabulary(self, ratio: int = 10, filename: str = "", path: str = "",
                          train_suffix: str = "_train", test_suffix: str = "_test") -> Tuple[str, str]:
@@ -122,20 +114,11 @@ class MorphDatabase:
         pass
 
 
-def longest_fitting_suffix(paradigm: str, suffices: FORMS) -> str:
-    """Returns that longest one from suffixes which paradigm ends with"""
-    longest = ""
-    for suffix in suffices.keys():
-        if paradigm.endswith(suffix) and len(suffix) > len(longest):
-            longest = suffix
-    return longest
-
-
-def translate_morph_db(par_file: str) -> PARADIGMS_TAIL_GROUPS:
+def paradigm_db(par_file: str) -> PARADIGMS_TAIL_GROUPS:
     """Transform data from paradigm file to final paradigm database"""
     translated = dict()
-    paradigm_db, tails = read_paradigms(par_file)
-    for paradigm, forms in paradigm_db.items():
+    paradigms, tails = read_paradigms(par_file)
+    for paradigm, forms in paradigms.items():
         translated[paradigm] = dict()
         for form, tail_groups in forms.items():
             for tg in tail_groups:
