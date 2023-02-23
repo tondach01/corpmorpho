@@ -86,8 +86,8 @@ class MorphDatabase:
         return matching
 
     def matching_suffixes_lemma(self, lemma_suffixes: List[str]) -> Set[str]:
-        """For given word segmented to suffixes, finds all paradigms containing form with common suffix. All others
-                are possible too if using empty suffix, but this is handled elsewhere."""
+        """For given lemma segmented to suffixes, finds all paradigms which lemma has common suffix. All others
+        are possible too if using empty suffix, but this is handled elsewhere."""
         matching = set()
         for paradigm, suffixes in self.paradigms.items():
             if suffixes["<suffix>"].split("_")[0] in lemma_suffixes:
