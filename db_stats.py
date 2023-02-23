@@ -1,54 +1,57 @@
 """This file contains tools for handling queries on corpora."""
 import morph_database as md
-from typing import Dict, List, TextIO, Set
+from typing import Dict, List, Set
 import pandas as pd
 import numpy as np
 
 
-def lemmas(corpus: TextIO):
+def lemmas(corpus: str):
     """Generates all lemmas from given corpus."""
     for word in corpus_generator(corpus, lemmas=True):
         yield word
 
 
-def corpus_generator(corpus: TextIO, lemmas: bool):
+def corpus_generator(corpus: str, lemmas: bool):
     """Generates all desired features (words/lemmas) from given corpus."""
-    line = corpus.readline()
+    c = open(corpus, encoding="utf-8")
+    line = c.readline()
     line = line.strip()
     while line:
         if len(line.split("\t")) == 3:
             yield line.split("\t")[1 if lemmas else 0]
-        line = corpus.readline()
+        line = c.readline()
         line = line.strip()
+    c.close()
 
 
-def words(corpus: TextIO):
+def words(corpus: str):
     """Generates all words from given corpus."""
     for word in corpus_generator(corpus, lemmas=False):
         yield word
 
 
-def words_to_dataframe(corpus: TextIO, morph_db: md.MorphDatabase) -> pd.DataFrame:
+def words_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame:
     """Converts all words from given corpus to dataframe."""
-    frame = pd.DataFrame([[x for x in words(corpus)], [x for x in lemmas(corpus)]], columns=["word", "lemma"])
+    frame = pd.DataFrame(data={"word": [x for x in words(corpus)], "lemma": [y for y in lemmas(corpus)]})
     frame["paradigm"] = frame.lemma.apply(lambda x: morph_db.vocab.get(x, ""))
     frame["count"] = np.ones(len(frame))
     return frame
 
 
-def lemmas_to_dataframe(corpus: TextIO, morph_db: md.MorphDatabase) -> pd.DataFrame:
+def lemmas_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame:
     frame = pd.DataFrame([x for x in lemmas(corpus)], columns=["lemma"])
     frame["paradigm"] = frame.lemma.apply(lambda x: morph_db.vocab.get(x, ""))
     frame["count"] = np.ones(len(frame))
     return frame
 
 
-def freqlist_to_dataframe(freqlist: TextIO, limit: int = -1, threshold_function=None) -> pd.DataFrame:
+def freqlist_to_dataframe(freqlist: str, limit: int = -1, threshold_function=None) -> pd.DataFrame:
     """Loads data from given frequency list to dataframe. The wordlist should be in format 'word lemma frequency'.
     Amount of loaded data can be limited (default -1 = unlimited). Rows to load can be filtered with threshold
     function List[str] -> bool."""
+    fl = open(freqlist, encoding="utf-8")
     data = []
-    row = freqlist.readline()
+    row = fl.readline()
     row = row.strip()
     while row:
         if len(data) == limit:
@@ -56,8 +59,9 @@ def freqlist_to_dataframe(freqlist: TextIO, limit: int = -1, threshold_function=
         elements = row.split()
         if len(elements) >= 3 and (threshold_function is None or threshold_function(elements)):
             data.append([elements[0], elements[1], int(elements[2])])
-        row = freqlist.readline()
+        row = fl.readline()
         row = row.strip()
+    fl.close()
     return pd.DataFrame(data=data, columns=["word", "lemma", "frequency"])
 
 
