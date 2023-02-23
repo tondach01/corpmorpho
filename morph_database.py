@@ -168,5 +168,5 @@ def read_paradigms(par_file: str) -> Tuple[PARADIGM_AFFIXES_GROUPS, AFFIXES]:
 
 
 def correct_encoding(line: str) -> str:
-    """Replaces wrongly encodes characters from dictionary and paradigm files"""
+    """Replaces wrongly encoded characters from dictionary and paradigm files"""
     return line.replace("ą", "š").replace("ľ", "ž").replace("»", "ť").replace("®", "Ž").replace("©", "Š")
