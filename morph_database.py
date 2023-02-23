@@ -58,7 +58,7 @@ class MorphDatabase:
             self.paradigms[paradigm]["<suffix>"] = paradigm[lemma.rfind(list(suffices.keys())[0]):]
 
     def split_vocabulary(self, ratio: int = 10, filename: str = "", path: str = "",
-                         train_suffix: str = "_train", test_suffix: str = "_test") -> Tuple[str, str]:
+                         train_suffix: str = "_train.dic", test_suffix: str = "_test.dic") -> Tuple[str, str]:
         """Split the database's vocabulary into two separate files of sizes
         approx. 1 : <ratio> - 1, returns their paths"""
         train = open(path + filename + train_suffix, "w", encoding="windows-1250")
