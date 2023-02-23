@@ -1,5 +1,5 @@
 """This file contains tools for creating and using morphological database."""
-from typing import Tuple, Dict, List, Union
+from typing import Tuple, Dict, List, Union, Set
 
 AFFIXES = Dict[str, List[Tuple[str, List[str]]]]
 FORMS = Dict[str, Union[str, List[str]]]
@@ -40,34 +40,19 @@ class MorphDatabase:
             return self.all_forms_with_paradigm(lemma, paradigm)
         return dict()
 
-    def all_forms_with_paradigm(self, lemma: str, paradigm: str, informal: bool = True) -> FORMS:
+    def all_forms_with_paradigm(self, lemma: str, paradigm: str) -> FORMS:
         """Constructs all forms for given lemma when its paradigm is known"""
         forms = dict()
         root = self.word_root(lemma, paradigm)
         for form, tags in self.paradigms[paradigm].items():
             if form == "<suffix>":
                 continue
-            if not informal:
-                formal = []
-                for tag in tags:
-                    if "wH" not in tag:
-                        formal.append(tag)
-                if formal:
-                    forms[root + form] = forms.get(root + form, []) + formal
-            else:
-                forms[root + form] = forms.get(root + form, []) + tags
+            forms[root + form] = forms.get(root + form, []) + tags
         return forms
 
     def word_root(self, lemma: str, paradigm: str) -> str:
-        """Finds the morphological root (resp. prefixes+root) for given lemma"""
-        if lemma.endswith("ný") or (lemma.endswith("cí") and not lemma.endswith("ící")) or lemma.endswith("tý") \
-                or lemma.endswith("ový") or lemma.endswith("lý") \
-                or (lemma.endswith("ní") and not lemma.endswith("ání") and not lemma.endswith("ení")):
-            return lemma[:-1]
-        common_suffix = len(self.paradigms[paradigm]["<suffix>"])
-        if common_suffix == 0:
-            return lemma
-        return lemma[:-common_suffix]
+        """Returns the morphological root (resp. prefixes+root) for given lemma"""
+        return lemma[:-len(self.paradigms[paradigm]["<suffix>"])]
 
     def add_similar_forms(self, root: str, paradigm: str, form: str, found_lt: List[Dict[str, str]]) -> None:
         """Searches through single paradigm and appends all lemma-tag pairs matching form"""
@@ -105,13 +90,16 @@ class MorphDatabase:
         test.close()
         return path + filename + train_suffix, path + filename + test_suffix
 
-    def possible_paradigm(self, segments: List[str]):
-        """
-        For given segmented word, finds all paradigms containing form with common suffix. All others
-        are possible too if using empty suffix, but this is handled elsewhere.
-        """
-        # TODO
-        pass
+    def matching_suffixes(self, word_suffixes: List[str]) -> Set[str]:
+        """For given word segmented to suffixes, finds all paradigms containing form with common suffix. All others
+        are possible too if using empty suffix, but this is handled elsewhere."""
+        matching = set()
+        for paradigm, suffixes in self.paradigms.items():
+            for suffix in suffixes.keys():
+                if suffix in word_suffixes:
+                    matching.add(paradigm)
+                    break
+        return matching
 
 
 def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:
