@@ -188,19 +188,3 @@ def read_paradigms(par_file: str) -> Tuple[PARADIGMS_TAIL_GROUPS, TAILS]:
 def correct_encoding(line: str) -> str:
     """Replaces wrongly encodes characters from dictionary and paradigm files"""
     return line.replace("ą", "š").replace("ľ", "ž").replace("»", "ť").replace("®", "Ž").replace("©", "Š")
-
-
-def main() -> MorphDatabase:
-    return MorphDatabase("data/current.dic", "data/current.par")
-
-
-if __name__ == "__main__":
-    import time
-
-    start = time.time()
-    md = main()
-    # print(md.matching_paradigms("beránek"))
-    # x = md.full_database()
-    # md.split_vocabulary()
-    print(f"{len(md.paradigms)} paradigms, {len(md.vocab)} words")
-    print(f"finished in {round(time.time() - start, 3)}s")
