@@ -21,9 +21,15 @@ def guess_paradigm_from_lemma(segments: List[str], frame) -> Dict[str, int]:
 def guess_lemma(segments: List[str], morph_db: md.MorphDatabase, frame) -> List[Tuple[int, str]]:
     """For given segmented word, finds possible lemmas and tries to sort them by their likeliness."""
     scores = []
-    for (matching_paradigm, lemma) in morph_db.matching_suffixes(["".join(segments[-i:]) for i in range(1, len(segments) + 1)]):
-        scores.append((len(dbs.occurring_forms(morph_db.only_forms(lemma, matching_paradigm), frame)),
-                       matching_paradigm))
+    all_possible_forms = set()
+    paradigm_possible_forms = dict()
+    for (matching_paradigm, lemma) in \
+            morph_db.matching_suffixes(["".join(segments[-i:]) for i in range(1, len(segments) + 1)]):
+        paradigm_possible_forms[matching_paradigm] = morph_db.only_forms(lemma, matching_paradigm)
+        all_possible_forms = all_possible_forms.union(paradigm_possible_forms[matching_paradigm])
+    occurred = dbs.occurring_forms(all_possible_forms, frame)
+    for paradigm, forms in paradigm_possible_forms.items():
+        scores.append((len(occurred.intersection(forms)), paradigm))
     scores.sort(reverse=True)
     return scores
 
