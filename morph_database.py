@@ -74,14 +74,16 @@ class MorphDatabase:
         test.close()
         return path + filename + train_suffix, path + filename + test_suffix
 
-    def matching_suffixes(self, word_suffixes: List[str]) -> Set[str]:
-        """For given word segmented to suffixes, finds all paradigms containing form with common suffix. All others
-        are possible too if using empty suffix, but this is handled elsewhere."""
+    def matching_suffixes(self, word_suffixes: List[str]) -> Set[Tuple[str, str]]:
+        """For given word segmented to suffixes, finds all paradigms containing form with common suffix and
+        returns them with possible lemma of the word. All others are possible too if using empty suffix,
+        but this will be handled elsewhere."""
         matching = set()
         for paradigm, suffixes in self.paradigms.items():
             for suffix in suffixes.keys():
                 if suffix in word_suffixes:
-                    matching.add(paradigm)
+                    matching.add((paradigm, word_suffixes[-1].lstrip("_")[:-len(suffix)]
+                                  + self.paradigms[paradigm]["<suffix>"].split("_")[0]))
                     break
         return matching
 

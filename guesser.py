@@ -18,7 +18,10 @@ def guess_paradigm_from_lemma(segments: List[str], frame) -> Dict[str, int]:
     return guess_paradigm(segments, None, frame, only_lemmas=True)
 
 
-def guess_lemma(segments: List[str], morph_db, frame) -> List[str]:
+def guess_lemma(segments: List[str], morph_db: md.MorphDatabase, frame) -> List[str]:
+    scores = []
+    for (matching_paradigm, lemma) in morph_db.matching_suffixes(["".join(segments[-i:]) for i in range(1, len(segments) + 1)]):
+        scores.append((matching_paradigm, dbs.occurring_forms(morph_db.all_forms_with_paradigm(matching_paradigm))))
     # TODO
     pass
 
