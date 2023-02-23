@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+"""This file contains tools for creating and using morphological database."""
 from typing import Tuple, Dict, List, Union
 
-TAILS = Dict[str, List[Tuple[str, List[str]]]]
+AFFIXES = Dict[str, List[Tuple[str, List[str]]]]
 FORMS = Dict[str, Union[str, List[str]]]
-PARADIGMS_TAIL_GROUPS = Dict[str, FORMS]
+PARADIGM_AFFIXES_GROUPS = Dict[str, FORMS]
 MORPH_DATABASE = Dict[str, Dict[str, Dict[str, int]]]
 VOCABULARY = Dict[str, str]
 
@@ -114,18 +114,18 @@ class MorphDatabase:
         pass
 
 
-def paradigm_db(par_file: str) -> PARADIGMS_TAIL_GROUPS:
-    """Transform data from paradigm file to final paradigm database"""
+def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:
+    """Creates database from data in paradigm file."""
     translated = dict()
-    paradigms, tails = read_paradigms(par_file)
+    paradigms, affixes = read_paradigms(par_file)
     for paradigm, forms in paradigms.items():
         translated[paradigm] = dict()
-        for form, tail_groups in forms.items():
-            for tg in tail_groups:
-                for ending in tails[tg]:
-                    suffix = form + ending[0]
+        for form, suffixes in forms.items():
+            for alias in suffixes:
+                for affix in affixes[alias]:
+                    suffix = form + affix[0]
                     translated[paradigm][suffix] = translated[paradigm].get(suffix, [])
-                    translated[paradigm][suffix].extend(ending[1])
+                    translated[paradigm][suffix].extend(affix[1])
     return translated
 
 
@@ -143,10 +143,9 @@ def vocabulary(dic_file: str) -> VOCABULARY:
     return vocab
 
 
-def read_paradigms(par_file: str) -> Tuple[PARADIGMS_TAIL_GROUPS, TAILS]:
+def read_paradigms(par_file: str) -> Tuple[PARADIGM_AFFIXES_GROUPS, AFFIXES]:
     """Reads paradigms file to dictionaries which wil be merged to paradigm database"""
-    # tails -> koncovky
-    tails = dict()
+    affixes = dict()
     database = dict()
     current = ""
     p = open(par_file, "r", encoding="windows-1250")
@@ -154,10 +153,10 @@ def read_paradigms(par_file: str) -> Tuple[PARADIGMS_TAIL_GROUPS, TAILS]:
         line = correct_encoding(line)
         if line.startswith("="):
             current = line.lstrip("=").rstrip()
-            tails[current] = list()
+            affixes[current] = list()
         elif line.startswith("\t{"):
             vals = line.lstrip("\t{").rstrip("}\n").split(",")
-            tails[current].append(("" if vals[0] == "_" else vals[0], [vals[1].strip()]))
+            affixes[current].append(("" if vals[0] == "_" else vals[0], [vals[1].strip()]))
         elif line.startswith("+"):
             current = line.lstrip("+").rstrip()
             database[current] = dict()
@@ -165,7 +164,7 @@ def read_paradigms(par_file: str) -> Tuple[PARADIGMS_TAIL_GROUPS, TAILS]:
             vals = line.strip().split()
             database[current][vals[0].lstrip("<").rstrip(">")] = [v.rstrip(",") for v in vals[1:]]
     p.close()
-    return database, tails
+    return database, affixes
 
 
 def correct_encoding(line: str) -> str:
