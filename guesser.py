@@ -18,11 +18,16 @@ def guess_paradigm_from_lemma(segments: List[str], frame) -> Dict[str, int]:
     return guess_paradigm(segments, None, frame, only_lemmas=True)
 
 
-def get_segment_method(segmenter: str):
+def guess_lemma(segments: List[str], morph_db, frame) -> List[str]:
+    # TODO
+    pass
+
+
+def get_segment_method(seg_tool: str):
     baseline = (lambda x: list(c for c in x))
-    if "sentencepiece" in segmenter:
+    if "sentencepiece" in seg_tool:
         import sentencepiece as sp
-        params = segmenter.split("_")
+        params = seg_tool.split("_")
         if len(params) != 3:
             return baseline
         sp.SentencePieceTrainer.train(f'--input=..{os.sep}desam{os.sep}prevert_desam'
@@ -31,9 +36,9 @@ def get_segment_method(segmenter: str):
         m = sp.SentencePieceProcessor()
         m.load("m.model")
         return m.encode_as_pieces
-    elif "morfessor" in segmenter:
+    elif "morfessor" in seg_tool:
         import morfessor as mo
-        params = segmenter.split("_")
+        params = seg_tool.split("_")
         max_epochs = 4
         if len(params) == 2 and params[1].isdigit():
             max_epochs = int(params[1])
@@ -46,15 +51,15 @@ def get_segment_method(segmenter: str):
     return baseline
 
 
-def main(source: TextIO, lemmatized: bool = False, segmenter: str = ""):
+def main(source: TextIO, lemma: bool = False, seg_tool: str = ""):
     morph_db = md.MorphDatabase(f"..{os.sep}data{os.sep}current.dic", f"..{os.sep}data{os.sep}current.par")
     corpus = f"..{os.sep}desam{os.sep}desam"
     frame = dbs.lemmas_to_dataframe(corpus, morph_db)
-    segment = get_segment_method(segmenter)
+    segment = get_segment_method(seg_tool)
     word = source.readline()
     word = word.strip()
     while word:
-        scores = guess_paradigm(segment(word), morph_db, frame, lemmatized)
+        scores = guess_paradigm(segment(word), morph_db, frame, lemma)
         dbs.print_scores(scores)
         word = source.readline()
         word = word.strip()
@@ -74,8 +79,8 @@ if __name__ == "__main__":
     if not os.path.exists(f".{os.sep}temp"):
         os.mkdir(f".{os.sep}temp")
     os.chdir(f".{os.sep}temp")
-    source = sys.stdin if args.infile is None else open(args.infile, encoding="utf-8")
-    main(source, args.lemma, args.use_segmenter)
+    src = sys.stdin if args.infile is None else open(args.infile, encoding="utf-8")
+    main(src, args.lemma, args.use_segmenter)
     if args.infile is None:
-        source.close()
+        src.close()
     os.chdir("..")
