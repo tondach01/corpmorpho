@@ -48,9 +48,8 @@ def get_segment_method(segmenter: str):
 
 def main(source: TextIO, lemmatized: bool = False, segmenter: str = ""):
     morph_db = md.MorphDatabase(f"..{os.sep}data{os.sep}current.dic", f"..{os.sep}data{os.sep}current.par")
-    corpus = open(f"..{os.sep}desam{os.sep}desam", encoding="utf-8")
+    corpus = f"..{os.sep}desam{os.sep}desam"
     frame = dbs.lemmas_to_dataframe(corpus, morph_db)
-    corpus.close()
     segment = get_segment_method(segmenter)
     word = source.readline()
     word = word.strip()

@@ -6,15 +6,14 @@ import morph_database as md
 import guesser as g
 import db_stats as dbs
 from os import sep
-from typing import TextIO
 
 
-def baseline_guess(test_vocab: str, corpus: TextIO, morph_db: md.MorphDatabase) -> None:
+def baseline_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase) -> None:
     """Tries to guess paradigm for each lemma in test_vocab and returns its success rate (all, correct)"""
     return segmented_guess(test_vocab, corpus, morph_db)
 
 
-def segmented_guess(test_vocab: str, corpus: TextIO, morph_db: md.MorphDatabase,
+def segmented_guess(test_vocab: str, corpus: str, morph_db: md.MorphDatabase,
                     segmenter: str = "", debug: bool = False) -> None:
     """Tries to guess paradigm for each lemma in test_vocab given its segmentation (if given segmenter)."""
     if debug:
@@ -48,9 +47,8 @@ def main():
     train, test = md.MorphDatabase(f"..{sep}data{sep}current.dic", f"..{sep}data{sep}current.par")\
         .split_vocabulary()
     train_md = md.MorphDatabase(train, f"..{sep}data{sep}current.par")
-    corpus = open(f"..{sep}desam{sep}desam", encoding="utf-8")
+    corpus = f"..{sep}desam{sep}desam"
     segmented_guess(test, corpus, train_md, segmenter=args.segmenter, debug=args.debug)
-    corpus.close()
     os.chdir("..")
     print(f"finished in {round(time() - start)}s")
 
