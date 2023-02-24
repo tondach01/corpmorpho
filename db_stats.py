@@ -45,23 +45,18 @@ def lemmas_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame
     return frame
 
 
-def freqlist_to_dataframe(freqlist: str, limit: int = -1, threshold_function=None) -> pd.DataFrame:
+def freqlist_to_dataframe(freqlist: str, limit: int = -1) -> pd.DataFrame:
     """Loads data from given frequency list to dataframe. The wordlist should be in format 'word lemma frequency'.
-    Amount of loaded data can be limited (default -1 = unlimited). Rows to load can be filtered with threshold
-    function List[str] -> bool."""
-    fl = open(freqlist, encoding="utf-8")
+    Amount of loaded data can be limited (default -1 = unlimited)."""
     data = []
-    row = fl.readline()
-    row = row.strip()
-    while row:
-        if len(data) == limit:
-            break
-        elements = row.split()
-        if len(elements) >= 3 and (threshold_function is None or threshold_function(elements)):
-            data.append([elements[0], elements[1], int(elements[2])])
-        row = fl.readline()
-        row = row.strip()
-    fl.close()
+    with open(freqlist, encoding="utf-8") as fl:
+        for row in fl:
+            row = row.strip()
+            if len(data) == limit:
+                break
+            elements = row.split()
+            if len(elements) >= 3:
+                data.append([elements[0], elements[1], int(elements[2])])
     return pd.DataFrame(data=data, columns=["word", "lemma", "frequency"])
 
 
