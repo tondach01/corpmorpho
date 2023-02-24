@@ -91,6 +91,20 @@ def occurring_forms(word_forms: Set[str], frame: pd.DataFrame) -> Set[str]:
     return found
 
 
+def clean_freqlist(freqlist: str) -> None:
+    cleaned = open(freqlist + ".cleaned", "w", encoding="utf-8")
+    with open(freqlist, encoding="utf-8") as fl:
+        for line in fl:
+            values = line.split("\t")
+            if len(values) < 3:
+                continue
+            word, lemma, freq = values[0], values[1], values[2]
+            if "http:" in word or "https:" in word or lemma == "#num#":
+                continue
+            print("\t".join([word, lemma, freq]), file=cleaned)
+    cleaned.close()
+
+
 def word_similarity(word: str, other: str) -> int:
     """Finds similarity of two words based on longest common substring"""
     max_similarity = 0
