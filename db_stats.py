@@ -87,14 +87,16 @@ def occurring_forms(word_forms: Set[str], frame: pd.DataFrame) -> Set[str]:
 
 
 def clean_freqlist(freqlist: str) -> None:
+    import re
     cleaned = open(freqlist + ".cleaned", "w", encoding="utf-8")
     with open(freqlist, encoding="utf-8") as fl:
         for line in fl:
-            values = line.split("\t")
-            if len(values) < 3:
+            if not re.fullmatch(r"\S+\s\S+\s\d+\s\d+", line.strip()):
                 continue
+            line = line.replace("ŧ", "ů").replace("ţ", "ž").replace("ĉ", "č"). replace("²", "š").replace("º", "ž")
+            values = line.split("\t")
             word, lemma, freq = values[0], values[1], values[2]
-            if "http:" in word or "https:" in word or lemma == "#num#":
+            if re.match(r"\A[\w-]*[^\d\W-]+[\w-]*\Z", word) is None or lemma == "#num#":
                 continue
             print("\t".join([word, lemma, freq]), file=cleaned)
     cleaned.close()
