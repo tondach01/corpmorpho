@@ -92,8 +92,8 @@ class MorphDatabase:
         for paradigm, suffixes in self.paradigms.items():
             for suffix in suffixes.keys():
                 if suffix in word_suffixes or not suffix:
-                    lemma = word_suffixes[-1].lstrip("_") if not suffix else \
-                        word_suffixes[-1].lstrip("_")[:-len(suffix)] \
+                    lemma = (word_suffixes[-1].lstrip("_") if not suffix else
+                             word_suffixes[-1].lstrip("_")[:-len(suffix)]) \
                         + self.paradigms[paradigm]["<suffix>"].split("_")[0]
                     matching.add((paradigm, lemma))
         return matching
@@ -101,6 +101,7 @@ class MorphDatabase:
     def matching_suffixes_lemma(self, lemma_suffixes: List[str]) -> Set[str]:
         """For given lemma segmented to suffixes, finds all paradigms which lemma has common suffix. All others
         are possible too if using empty suffix, but this is handled elsewhere."""
+        # TODO update according to matching_suffixes
         matching = set()
         for paradigm, suffixes in self.paradigms.items():
             if suffixes["<suffix>"].split("_")[0] in lemma_suffixes:
