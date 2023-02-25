@@ -55,9 +55,9 @@ def freqlist_to_dataframe(freqlist: str, limit: int = -1) -> pd.DataFrame:
             if len(data) == limit:
                 break
             elements = row.split()
-            if len(elements) >= 3:
-                data.append([elements[0], elements[1], int(elements[2])])
-    return pd.DataFrame(data=data, columns=["word", "lemma", "frequency"])
+            if len(elements) >= 2:
+                data.append([elements[0], int(elements[1])])
+    return pd.DataFrame(data=data, columns=["word", "frequency"])
 
 
 def lemma_scores(segments: List[str], frame: pd.DataFrame, morph_db: md.MorphDatabase) -> Dict[str, int]:
