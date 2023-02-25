@@ -46,7 +46,8 @@ class MorphDatabase:
 
     def word_root(self, lemma: str, paradigm: str) -> str:
         """Returns the morphological root (resp. prefixes+root) for given lemma"""
-        return lemma[:-len(self.paradigms[paradigm]["<suffix>"].split("_")[0])]
+        common_suffix = self.paradigms[paradigm]["<suffix>"].split("_")[0]
+        return lemma if not common_suffix else lemma[:-len(common_suffix)]
 
     def add_similar_forms(self, root: str, paradigm: str, form: str, found_lt: List[Dict[str, str]]) -> None:
         """Searches through single paradigm and appends all lemma-tag pairs matching form"""
