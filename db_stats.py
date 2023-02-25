@@ -91,14 +91,13 @@ def clean_freqlist(freqlist: str) -> None:
     cleaned = open(freqlist + ".cleaned", "w", encoding="utf-8")
     with open(freqlist, encoding="utf-8") as fl:
         for line in fl:
-            if not re.fullmatch(r"\S+\s\S+\s\d+\s\d+", line.strip()):
+            if not re.fullmatch(r"\S+\s\d+\s\d+", line.strip()):
                 continue
-            line = line.replace("ŧ", "ů").replace("ţ", "ž").replace("ĉ", "č"). replace("²", "š").replace("º", "ž")
             values = line.split("\t")
-            word, lemma, freq = values[0], values[1], values[2]
-            if re.match(r"\A[\w-]*[^\d\W-]+[\w-]*\Z", word) is None or lemma == "#num#":
+            word, freq = values[0], values[1]
+            if re.fullmatch(r"[\w-]*[^\d\W-]+[\w-]*", word) is None:
                 continue
-            print("\t".join([word, lemma, freq]), file=cleaned)
+            print("\t".join([word, freq]), file=cleaned)
     cleaned.close()
 
 
