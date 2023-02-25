@@ -29,7 +29,10 @@ def guess_lemma(segments: List[str], morph_db: md.MorphDatabase, frame) -> List[
         all_possible_forms = all_possible_forms.union(paradigm_possible_forms[matching_paradigm])
     occurred = dbs.occurring_forms(all_possible_forms, frame)
     for paradigm, forms in paradigm_possible_forms.items():
-        scores.append((len(occurred.intersection(forms)), paradigm))
+        count = 0
+        for form in forms:
+            count += 0 if form not in occurred else occurred[form]
+        scores.append((count, paradigm))
     scores.sort(reverse=True)
     return scores
 

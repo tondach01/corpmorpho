@@ -77,12 +77,12 @@ def word_scores(segments: List[str], frame: pd.DataFrame, morph_db: md.MorphData
     pass
 
 
-def occurring_forms(word_forms: Set[str], frame: pd.DataFrame) -> Set[str]:
+def occurring_forms(word_forms: Set[str], frame: pd.DataFrame) -> Dict[str, int]:
     """From given forms of a word, returns those that occur in given dataframe."""
-    found = set()
+    found = dict()
     for form in word_forms:
         if not frame[frame.word == form].empty:
-            found.add(form)
+            found[form] = frame[frame.word == form].frequency
     return found
 
 

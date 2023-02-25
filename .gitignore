@@ -4,3 +4,4 @@ temp/
 .idea/
 unit_testing.py
 data/*.freqlist*
+data/*.csv
