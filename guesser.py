@@ -5,6 +5,16 @@ import morph_database as md
 from typing import Dict, List, TextIO, Tuple
 
 
+def guess_paradigm_from_corpus(segments: List[str], freq_list: str, morph_db: md.MorphDatabase, seg_method)\
+        -> List[Tuple[int, int, str, str]]:
+    """Guesses paradigm of given word based on occurrences of similar words in given corpus. Returns sorted
+    list of tuples (found forms, not found forms, paradigm, lemma)"""
+    # TODO find similiar words
+    # TODO compare with database
+    # TODO return scores and sort
+    pass
+
+
 def guess_paradigm(segments: List[str], morph_db, frame, only_lemmas: bool = False) -> Dict[str, int]:
     """Guesses the probabilities of paradigms for given word and its sub-word segmentation,
     bigger matched suffixes are prioritized. Note: very slow for non-lemmatized word"""

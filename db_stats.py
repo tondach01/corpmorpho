@@ -100,6 +100,22 @@ def clean_freqlist(freqlist: str) -> None:
     cleaned.close()
 
 
+def similar_words(segments: List[str], freq_list: str, seg_method) -> Dict[str, Dict[str, int]]:
+    """Finds words similar to given segmented one, based on their common segmentation."""
+    similar = dict()
+    for i in range(len(segments)):
+        similar["".join(segments[:i + 1])] = dict()
+    with open(freq_list, encoding="utf-8") as fl:
+        for line in fl:
+            values = line.strip().split()
+            corp_segments = seg_method(values[0])
+            for i in range(min(len(segments), len(corp_segments))):
+                if segments[:i + 1] == corp_segments[:i + 1]:
+                    similar["".join(segments[:i + 1])]["" if i == len(corp_segments) - 1
+                                                       else "".join(corp_segments[i + 1:])] = int(values[1])
+    return similar
+
+
 def word_similarity(word: str, other: str) -> int:
     """Finds similarity of two words based on longest common substring"""
     max_similarity = 0
