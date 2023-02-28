@@ -109,6 +109,15 @@ class MorphDatabase:
                 continue
         return matching
 
+    def suitable_paradigms(self, suffixes: Set[str]) -> Dict[str, Set[str]]:
+        """Filters given set of suffixes for each paradigm in database."""
+        par = dict()
+        for paradigm, par_suffixes in self.paradigms.items():
+            common = suffixes.intersection(par_suffixes.keys())
+            if common:
+                par[paradigm] = common
+        return par
+
 
 def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:
     """Creates database from data in paradigm file."""

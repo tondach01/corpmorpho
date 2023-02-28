@@ -9,7 +9,9 @@ def guess_paradigm_from_corpus(segments: List[str], freq_list: str, morph_db: md
         -> List[Tuple[int, int, str, str]]:
     """Guesses paradigm of given word based on occurrences of similar words in given corpus. Returns sorted
     list of tuples (found forms, not found forms, paradigm, lemma)"""
-    # TODO find similiar words
+    similars = dbs.similar_words(segments, freq_list, seg_method)
+    for root, suffixes in similars.items():
+        pass
     # TODO compare with database
     # TODO return scores and sort
     pass
