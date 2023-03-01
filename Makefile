@@ -10,7 +10,7 @@ sort_alpha: clean_freq_list
 	sort -k1 data/cstenten17_mj2.freqlist.cleaned > data/cstenten17_mj2.freqlist.cleaned.sorted_alpha
 
 hftok_learn:
-	python3 hftok/hftoks.py learn hftok/desam.pretok > hftok/desam.vocab
+	python3 hftok/hftoks.py learn hftok/desam.pretok hftok/desam.vocab
 
 clean:
 	rm -rf data/cstenten17_mj2.freqlist.cleaned data/cstenten17_mj2.freqlist.cleaned.sorted data/cstenten17_mj2.freqlist.cleaned.sorted.alpha
