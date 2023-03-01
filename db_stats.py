@@ -94,7 +94,7 @@ def clean_freqlist(freqlist: str) -> None:
                 continue
             values = line.split("\t")
             word, freq = values[0], values[1]
-            if re.fullmatch(r"[\w-]*[^\d\W-]+[\w-]*", word) is None:
+            if re.fullmatch(r"\w+-\w+", word) is None:
                 continue
             print("\t".join([word, freq]), file=cleaned)
     cleaned.close()
