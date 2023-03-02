@@ -100,6 +100,22 @@ def clean_freqlist(freqlist: str) -> None:
     cleaned.close()
 
 
+def segment_dic_file(morph_db: md.MorphDatabase, seg_method, outfile: str, only_lemmas: bool = True) -> None:
+    """Segments each word in vocabulary of morphological database with given method. If only_lemmas set
+    to False, it first computes and includes all forms of given lemma. Result is saved to outfile."""
+    with open(outfile, "w", encoding="utf-8") as out:
+        for lemma, paradigm in morph_db.vocab.items():
+            segments = "=".join(seg_method(lemma)).replace("_", "").replace("¦", "").replace("𐋇", "")\
+                .replace("𐊣", "").replace("𐊼", "")
+            print(f"{segments}:{lemma}:{paradigm}", file=out)
+            if only_lemmas:
+                continue
+            for form in morph_db.only_forms(lemma, paradigm):
+                segments = "=".join(seg_method(form)).replace("_", "").replace("¦", "").replace("𐋇", "") \
+                    .replace("𐊣", "").replace("𐊼", "")
+                print(f"{segments}:{lemma}:{paradigm}", file=out)
+
+
 def similar_words(segments: List[str], freq_list: str, seg_method) -> Dict[str, Dict[str, int]]:
     """Finds words similar to given segmented one, based on their common segmentation."""
     similar = dict()
