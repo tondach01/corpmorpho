@@ -28,9 +28,7 @@ class MorphDatabase:
         """Returns set of all forms for given lemma and paradigm."""
         forms = set()
         root = self.word_root(lemma, paradigm)
-        for suffix in self.paradigms[paradigm].keys():
-            if suffix == "<suffix>":
-                continue
+        for suffix in self.paradigms[paradigm]["affixes"].keys():
             forms.add(root + suffix)
         return forms
 
@@ -38,9 +36,7 @@ class MorphDatabase:
         """Constructs all forms for given lemma when its paradigm is known"""
         forms = dict()
         root = self.word_root(lemma, paradigm)
-        for form, tags in self.paradigms[paradigm].items():
-            if form == "<suffix>":
-                continue
+        for form, tags in self.paradigms[paradigm]["affixes"].items():
             forms[root + form] = forms.get(root + form, []) + tags
         return forms
 
@@ -51,9 +47,7 @@ class MorphDatabase:
 
     def add_similar_forms(self, root: str, paradigm: str, form: str, found_lt: List[Dict[str, str]]) -> None:
         """Searches through single paradigm and appends all lemma-tag pairs matching form"""
-        for paradigm_form, tags in self.paradigms[paradigm].items():
-            if paradigm_form == "<suffix>":
-                continue
+        for paradigm_form, tags in self.paradigms[paradigm]["affixes"].items():
             if root + paradigm_form == form:
                 found_lt += [dict(lemma=(root + self.paradigms[paradigm]["<suffix>"]), tag=tag) for tag in tags]
 
@@ -63,10 +57,10 @@ class MorphDatabase:
 
     def paradigm_suffixes(self) -> None:
         """Assigns suffix (part of word to be cut when creating other forms) to each paradigm in database."""
-        for paradigm, suffices in self.paradigms.items():
+        for paradigm, suffixes in self.paradigms.items():
             lemma = paradigm.split("_", 1)[0]
             # keys() iterates in insertion order
-            self.paradigms[paradigm]["<suffix>"] = paradigm[lemma.rfind(list(suffices.keys())[0]):]
+            self.paradigms[paradigm]["<suffix>"] = paradigm[lemma.rfind(list(suffixes["affixes"].keys())[0]):]
 
     def split_vocabulary(self, ratio: int = 10, filename: str = "", path: str = "",
                          train_suffix: str = "_train.dic", test_suffix: str = "_test.dic") -> Tuple[str, str]:
@@ -90,7 +84,7 @@ class MorphDatabase:
         returns them with possible lemma of the word. Empty suffixes are counted in too."""
         matching = set()
         for paradigm, suffixes in self.paradigms.items():
-            for suffix in suffixes.keys():
+            for suffix in suffixes["affixes"].keys():
                 if suffix in word_suffixes or not suffix:
                     lemma = (word_suffixes[-1].lstrip("_") if not suffix else
                              word_suffixes[-1].lstrip("_")[:-len(suffix)]) \
@@ -113,7 +107,7 @@ class MorphDatabase:
         """Filters given set of suffixes for each paradigm in database."""
         par = dict()
         for paradigm, par_suffixes in self.paradigms.items():
-            common = suffixes.intersection(par_suffixes.keys())
+            common = suffixes.intersection(par_suffixes["affixes"].keys())
             if common:
                 par[paradigm] = common
         return par
@@ -125,12 +119,13 @@ def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:
     paradigms, affixes = read_paradigms(par_file)
     for paradigm, forms in paradigms.items():
         translated[paradigm] = dict()
+        translated[paradigm]["affixes"] = dict()
         for form, suffixes in forms.items():
             for alias in suffixes:
                 for affix in affixes[alias]:
                     suffix = form + affix[0]
-                    translated[paradigm][suffix] = translated[paradigm].get(suffix, [])
-                    translated[paradigm][suffix].extend(affix[1])
+                    translated[paradigm]["affixes"][suffix] = translated[paradigm].get(suffix, [])
+                    translated[paradigm]["affixes"][suffix].extend(affix[1])
     return translated
 
 
@@ -149,7 +144,7 @@ def vocabulary(dic_file: str) -> VOCABULARY:
 
 
 def read_paradigms(par_file: str) -> Tuple[PARADIGM_AFFIXES_GROUPS, AFFIXES]:
-    """Reads paradigms file to dictionaries which wil be merged to paradigm database"""
+    """Reads paradigms file to dictionaries which will be merged to paradigm database"""
     affixes = dict()
     database = dict()
     current = ""
