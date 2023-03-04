@@ -85,19 +85,29 @@ def occurring_forms(word_forms: Set[str], frame: pd.DataFrame) -> Dict[str, int]
     return found
 
 
-def clean_freqlist(freqlist: str) -> None:
+def clean_freqlist(freq_list: str) -> None:
     import re
-    cleaned = open(freqlist + ".cleaned", "w", encoding="utf-8")
-    with open(freqlist, encoding="utf-8") as fl:
+    cleaned = open(freq_list + ".cleaned", "w", encoding="utf-8")
+    with open(freq_list, encoding="utf-8") as fl:
         for line in fl:
             if not re.fullmatch(r"\S+\s\d+\s\d+", line.strip()):
                 continue
             values = line.split("\t")
             word, freq = values[0], values[1]
-            if re.fullmatch(r"\w*-?\w+", word) is None:
+            if re.fullmatch(r"[a-záéíóúůýěžščřďťň]+", word) is None:
                 continue
             print("\t".join([word, freq]), file=cleaned)
     cleaned.close()
+
+
+def filter_freqlist(freq_list: str, morph_db: md.MorphDatabase) -> None:
+    out = open(f"{freq_list}.filtered", "w", encoding="utf-8")
+    with open(freq_list, encoding="utf-8") as fl:
+        for line in fl:
+            word = line.split()[0]
+            for paradigm, _ in morph_db.paradigms:
+                if word in set(map(str.lower, morph_db.only_forms(paradigm, paradigm))):
+                    out.write(line)
 
 
 def segment_dic_file(morph_db: md.MorphDatabase, seg_method, outfile: str, only_lemmas: bool = True) -> None:

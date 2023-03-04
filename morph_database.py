@@ -1,9 +1,10 @@
 """This file contains tools for creating and using morphological database."""
 from typing import Tuple, Dict, List, Union, Set
+import re
 
 AFFIXES = Dict[str, List[Tuple[str, List[str]]]]
-FORMS = Dict[str, Union[str, List[str]]]
-PARADIGM_AFFIXES_GROUPS = Dict[str, FORMS]
+PAR_DATA = Dict[str, Union[str, Dict[str, List[str]], List[Tuple[str, float]]]]
+PARADIGM_AFFIXES_GROUPS = Dict[str, PAR_DATA]
 MORPH_DATABASE = Dict[str, Dict[str, Dict[str, int]]]
 VOCABULARY = Dict[str, str]
 
@@ -12,12 +13,16 @@ class MorphDatabase:
     """This class represents morphological database obtained from dictionary and paradigm files. Holds
     attributes vocab (dictionary lemma:paradigm) and paradigms (paradigm:suffixes and tags)."""
 
-    def __init__(self, dic_file: str, par_file: str):
+    def __init__(self, dic_file: str, par_file: str, freq_list: str = ""):
         self.vocab = vocabulary(dic_file)
         self.paradigms = paradigm_db(par_file)
         self.paradigm_suffixes()
+        if freq_list:
+            for paradigm in self.paradigms.keys():
+                print(paradigm)  # debug
+                self.paradigms[paradigm]["rel_spread"] = relative_spread(self.only_forms(paradigm, paradigm), freq_list)
 
-    def all_forms(self, lemma: str) -> FORMS:
+    def all_forms(self, lemma: str) -> PAR_DATA:
         """Constructs all forms for given lemma"""
         paradigm = self.find_paradigm(lemma) if lemma not in self.paradigms.keys() else lemma
         if paradigm:
@@ -32,7 +37,7 @@ class MorphDatabase:
             forms.add(root + suffix)
         return forms
 
-    def all_forms_with_paradigm(self, lemma: str, paradigm: str) -> FORMS:
+    def all_forms_with_paradigm(self, lemma: str, paradigm: str) -> PAR_DATA:
         """Constructs all forms for given lemma when its paradigm is known"""
         forms = dict()
         root = self.word_root(lemma, paradigm)
@@ -127,6 +132,30 @@ def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:
                     translated[paradigm]["affixes"][suffix] = translated[paradigm].get(suffix, [])
                     translated[paradigm]["affixes"][suffix].extend(affix[1])
     return translated
+
+
+def relative_spread(forms: Set[str], freq_list: str) -> List[Tuple[str, float]]:
+    """Computes relative spread of given forms in corpus characterized by its alphabetically sorted
+    frequency list."""
+    fl = open(freq_list, encoding="utf-8")
+    freqs = list()
+    norm = 0.0
+    found = 0
+    max_ord = max([ord(x[0].lower()) for x in forms])
+    line = fl.readline()
+    while line.strip():
+        values = line.strip().split()
+        word = values[0]
+        if found == len(forms) or ord(word[0]) > max_ord:
+            break
+        if word in forms:
+            f = float(values[1])
+            freqs.append((word, f))
+            norm = max(norm, f)
+            found += 1
+        line = fl.readline()
+    fl.close()
+    return [(form, fr / norm) for (form, fr) in freqs]
 
 
 def vocabulary(dic_file: str) -> VOCABULARY:
