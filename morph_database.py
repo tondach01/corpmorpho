@@ -1,6 +1,5 @@
 """This file contains tools for creating and using morphological database."""
 from typing import Tuple, Dict, List, Union, Set
-import re
 
 AFFIXES = Dict[str, List[Tuple[str, List[str]]]]
 PAR_DATA = Dict[str, Union[str, Dict[str, List[str]], List[Tuple[str, float]]]]
@@ -18,9 +17,7 @@ class MorphDatabase:
         self.paradigms = paradigm_db(par_file)
         self.paradigm_suffixes()
         if freq_list:
-            for paradigm in self.paradigms.keys():
-                print(paradigm)  # debug
-                self.paradigms[paradigm]["rel_spread"] = relative_spread(self.only_forms(paradigm, paradigm), freq_list)
+            self.relative_spread(freq_list)
 
     def all_forms(self, lemma: str) -> PAR_DATA:
         """Constructs all forms for given lemma"""
@@ -117,6 +114,16 @@ class MorphDatabase:
                 par[paradigm] = common
         return par
 
+    def relative_spread(self, freq_list: str) -> None:
+        """Computes relative spread of given forms in corpus characterized by its alphabetically sorted
+        filtered frequency list."""
+        with open(freq_list, encoding="utf-8") as fl:
+            for line in fl:
+                values = line.strip().split()
+                paradigm, word = values[0], values[1]
+                self.paradigms[paradigm]["rel_spread"] = self.paradigms[paradigm].get("rel_spread", list())
+                self.paradigms[paradigm]["rel_spread"].append((word, float(values[2])))
+
 
 def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:
     """Creates database from data in paradigm file."""
@@ -132,30 +139,6 @@ def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:
                     translated[paradigm]["affixes"][suffix] = translated[paradigm].get(suffix, [])
                     translated[paradigm]["affixes"][suffix].extend(affix[1])
     return translated
-
-
-def relative_spread(forms: Set[str], freq_list: str) -> List[Tuple[str, float]]:
-    """Computes relative spread of given forms in corpus characterized by its alphabetically sorted
-    frequency list."""
-    fl = open(freq_list, encoding="utf-8")
-    freqs = list()
-    norm = 0.0
-    found = 0
-    max_ord = max([ord(x[0].lower()) for x in forms])
-    line = fl.readline()
-    while line.strip():
-        values = line.strip().split()
-        word = values[0]
-        if found == len(forms) or ord(word[0]) > max_ord:
-            break
-        if word in forms:
-            f = float(values[1])
-            freqs.append((word, f))
-            norm = max(norm, f)
-            found += 1
-        line = fl.readline()
-    fl.close()
-    return [(form, fr / norm) for (form, fr) in freqs]
 
 
 def vocabulary(dic_file: str) -> VOCABULARY:

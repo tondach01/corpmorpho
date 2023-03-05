@@ -104,10 +104,13 @@ def filter_freqlist(freq_list: str, morph_db: md.MorphDatabase) -> None:
     out = open(f"{freq_list}.filtered", "w", encoding="utf-8")
     with open(freq_list, encoding="utf-8") as fl:
         for line in fl:
+            print(line.strip())  # debug
             word = line.split()[0]
-            for paradigm, _ in morph_db.paradigms:
+            for paradigm, data in morph_db.paradigms.items():
+                if word[0] != paradigm[0].lower() and data["<suffix>"] != paradigm:
+                    continue
                 if word in set(map(str.lower, morph_db.only_forms(paradigm, paradigm))):
-                    out.write(line)
+                    out.write(f"{paradigm}\t{line}")
 
 
 def segment_dic_file(morph_db: md.MorphDatabase, seg_method, outfile: str, only_lemmas: bool = True) -> None:
