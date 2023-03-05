@@ -2,7 +2,7 @@
 from typing import Tuple, Dict, List, Union, Set
 
 AFFIXES = Dict[str, List[Tuple[str, List[str]]]]
-PAR_DATA = Dict[str, Union[str, Dict[str, List[str]], List[Tuple[str, float]]]]
+PAR_DATA = Dict[str, Union[str, Dict[str, List[str]], Dict[str, float]]]
 PARADIGM_AFFIXES_GROUPS = Dict[str, PAR_DATA]
 MORPH_DATABASE = Dict[str, Dict[str, Dict[str, int]]]
 VOCABULARY = Dict[str, str]
@@ -121,9 +121,9 @@ class MorphDatabase:
             for line in fl:
                 values = line.strip().split()
                 paradigm, word = values[0], values[1]
-                self.paradigms[paradigm]["spread"] = self.paradigms[paradigm].get("spread", list())
-                self.paradigms[paradigm]["spread"].append(
-                    (word[len(paradigm) - len(self.paradigms[paradigm]["<suffix>"]):], float(values[2])))
+                self.paradigms[paradigm]["spread"] = self.paradigms[paradigm].get("spread", dict())
+                self.paradigms[paradigm]["spread"].update(
+                    {word[len(paradigm) - len(self.paradigms[paradigm]["<suffix>"]):]: float(values[2])})
 
 
 def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:

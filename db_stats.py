@@ -170,7 +170,18 @@ def spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> flo
     for suf, freq in word.items():
         if suf not in paradigm.keys():
             diff += freq
-    return diff
+    return diff / len(paradigm)
+
+
+def spread_scores(word: Dict[str, float], morph_db: md.MorphDatabase) -> Dict[str, float]:
+    """Computes paradigm scores for given word based on its forms spread."""
+    word_normed = normalize_spread(word)
+    scores = dict()
+    for paradigm, data in morph_db.paradigms.items():
+        if not set(word.keys()).intersection(set(data["affixes"].keys())):
+            continue
+        scores[paradigm] = spread_difference(normalize_spread(data["spread"]), word_normed)
+    return scores
 
 
 def print_scores(scores: Dict[str, int]) -> None:
