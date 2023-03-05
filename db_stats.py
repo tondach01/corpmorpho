@@ -1,6 +1,6 @@
 """This file contains tools for handling queries on corpora."""
 import morph_database as md
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 import pandas as pd
 import numpy as np
 
@@ -101,6 +101,7 @@ def clean_freqlist(freq_list: str) -> None:
 
 
 def filter_freqlist(freq_list: str, morph_db: md.MorphDatabase) -> None:
+    """Picks from alphabetically sorted frequency list only forms of paradigms in morphological database."""
     out = open(f"{freq_list}.filtered", "w", encoding="utf-8")
     with open(freq_list, encoding="utf-8") as fl:
         for line in fl:
@@ -153,6 +154,23 @@ def word_similarity(word: str, other: str) -> int:
             if end - start > max_similarity and word[start:end] in other:
                 max_similarity = end - start
     return max_similarity
+
+
+def normalize_spread(spread: Dict[str, float]) -> Dict[str, float]:
+    """Normalizes given frequency spread by dividing each frequency by greatest occurred frequency."""
+    norm = max(spread.values())
+    return {suf: freq / norm for (suf, freq) in spread}
+
+
+def spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> float:
+    """Computes difference of normalized spreads of given paradigm and word."""
+    diff = 0
+    for suf, freq in paradigm.items():
+        diff += abs(freq - word.get(suf, 0.0))
+    for suf, freq in word.items():
+        if suf not in paradigm.keys():
+            diff += freq
+    return diff
 
 
 def print_scores(scores: Dict[str, int]) -> None:

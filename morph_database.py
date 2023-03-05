@@ -17,7 +17,7 @@ class MorphDatabase:
         self.paradigms = paradigm_db(par_file)
         self.paradigm_suffixes()
         if freq_list:
-            self.relative_spread(freq_list)
+            self.form_spread(freq_list)
 
     def all_forms(self, lemma: str) -> PAR_DATA:
         """Constructs all forms for given lemma"""
@@ -114,15 +114,16 @@ class MorphDatabase:
                 par[paradigm] = common
         return par
 
-    def relative_spread(self, freq_list: str) -> None:
+    def form_spread(self, freq_list: str) -> None:
         """Computes relative spread of given forms in corpus characterized by its alphabetically sorted
         filtered frequency list."""
         with open(freq_list, encoding="utf-8") as fl:
             for line in fl:
                 values = line.strip().split()
                 paradigm, word = values[0], values[1]
-                self.paradigms[paradigm]["rel_spread"] = self.paradigms[paradigm].get("rel_spread", list())
-                self.paradigms[paradigm]["rel_spread"].append((word, float(values[2])))
+                self.paradigms[paradigm]["spread"] = self.paradigms[paradigm].get("spread", list())
+                self.paradigms[paradigm]["spread"].append(
+                    (word[len(paradigm) - len(self.paradigms[paradigm]["<suffix>"]):], float(values[2])))
 
 
 def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:
