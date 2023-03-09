@@ -184,6 +184,28 @@ def spread_scores(word: Dict[str, float], morph_db: md.MorphDatabase) -> Dict[st
     return scores
 
 
+def get_suffixes(word: List[str], corpus: str, seg_method) -> Dict[str, Dict[str, float]]:
+    """Lists through alphabetically sorted frequency list and finds all words with prefixes
+    obtained with segmentation method matching with some prefix of segmented word."""
+    suffixes = {pref: dict() for pref in ["".join(word[:i + 1]) for i in range(len(word))]}
+    fl = open(corpus, encoding="utf-8")
+    line = fl.readline()
+    while line.strip():
+        if line[0] > word[0][0]:
+            break
+        if not line.startswith(word[0]):
+            line = fl.readline()
+            continue
+        values = line.strip().split()
+        segments = seg_method(values[0])
+        for segment in ["".join(segments[:i + 1]) for i in range(len(segments))]:
+            if segment in suffixes.keys():
+                suffixes[segment][values[0][len(segment):]] = float(values[1])
+        line = fl.readline()
+    fl.close()
+    return suffixes
+
+
 def print_scores(scores: Dict[str, int]) -> None:
     """Prints paradigms in descending order (by their frequency scores)"""
     # TODO enhance
