@@ -45,46 +45,6 @@ def lemmas_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame
     return frame
 
 
-def freqlist_to_dataframe(freqlist: str, limit: int = -1) -> pd.DataFrame:
-    """Loads data from given frequency list to dataframe. The wordlist should be in format 'word lemma frequency'.
-    Amount of loaded data can be limited (default -1 = unlimited)."""
-    data = []
-    with open(freqlist, encoding="utf-8") as fl:
-        for row in fl:
-            row = row.strip()
-            if len(data) == limit:
-                break
-            elements = row.split()
-            if len(elements) >= 2:
-                data.append([elements[0], int(elements[1])])
-    return pd.DataFrame(data=data, columns=["word", "frequency"])
-
-
-def lemma_scores(segments: List[str], frame: pd.DataFrame, morph_db: md.MorphDatabase) -> Dict[str, int]:
-    filtered = frame[frame.paradigm != ""]
-    scores = dict()
-    for suffix in segments:
-        filtered = filtered[filtered.lemma.apply(lambda x: x.endswith(suffix))]
-        if len(filtered) == 0:
-            return scores
-        for paradigm, count in filtered.groupby(["paradigm"]).size().to_dict().items():
-            scores[paradigm] = max(scores.get(paradigm, 0), len(suffix) * count)
-    return scores
-
-
-def word_scores(segments: List[str], frame: pd.DataFrame, morph_db: md.MorphDatabase) -> Dict[str, int]:
-    # TODO
-    pass
-
-
-def occurring_forms(word_forms: Set[str], frame: pd.DataFrame) -> Dict[str, int]:
-    """From given forms of a word, returns those that occur in given dataframe."""
-    found = dict()
-    for form in word_forms:
-        found[form] = frame[frame.word == form].frequency.sum()
-    return found
-
-
 def clean_freqlist(freq_list: str) -> None:
     import re
     cleaned = open(freq_list + ".cleaned", "w", encoding="utf-8")
@@ -110,7 +70,7 @@ def filter_freqlist(freq_list: str, morph_db: md.MorphDatabase) -> None:
             for paradigm, data in morph_db.paradigms.items():
                 if word[0] != paradigm[0].lower() and data["<suffix>"] != paradigm:
                     continue
-                if word in set(map(str.lower, morph_db.only_forms(paradigm, paradigm))):
+                if word in set(map(str.lower, morph_db.lemma_forms(paradigm, paradigm))):
                     out.write(f"{paradigm}\t{line}")
 
 
@@ -124,7 +84,7 @@ def segment_dic_file(morph_db: md.MorphDatabase, seg_method, outfile: str, only_
             print(f"{segments}:{lemma}:{paradigm}", file=out)
             if only_lemmas:
                 continue
-            for form in morph_db.only_forms(lemma, paradigm):
+            for form in morph_db.lemma_forms(lemma, paradigm):
                 segments = "=".join(seg_method(form)).replace("_", "").replace("¦", "").replace("𐋇", "") \
                     .replace("𐊣", "").replace("𐊼", "")
                 print(f"{segments}:{lemma}:{paradigm}", file=out)
@@ -144,16 +104,6 @@ def similar_words(segments: List[str], freq_list: str, seg_method) -> Dict[str, 
                     similar["".join(segments[:i + 1])]["" if i == len(corp_segments) - 1
                                                        else "".join(corp_segments[i + 1:])] = int(values[1])
     return similar
-
-
-def word_similarity(word: str, other: str) -> int:
-    """Finds similarity of two words based on longest common substring"""
-    max_similarity = 0
-    for start in range(len(word)):
-        for end in range(start, len(word) + 1):
-            if end - start > max_similarity and word[start:end] in other:
-                max_similarity = end - start
-    return max_similarity
 
 
 def normalize_spread(spread: Dict[str, float]) -> Dict[str, float]:

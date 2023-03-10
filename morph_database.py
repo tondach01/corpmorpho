@@ -19,14 +19,7 @@ class MorphDatabase:
         if freq_list:
             self.form_spread(freq_list)
 
-    def all_forms(self, lemma: str) -> PAR_DATA:
-        """Constructs all forms for given lemma"""
-        paradigm = self.find_paradigm(lemma) if lemma not in self.paradigms.keys() else lemma
-        if paradigm:
-            return self.all_forms_with_paradigm(lemma, paradigm)
-        return dict()
-
-    def only_forms(self, lemma: str, paradigm: str) -> Set[str]:
+    def lemma_forms(self, lemma: str, paradigm: str) -> Set[str]:
         """Returns set of all forms for given lemma and paradigm."""
         forms = set()
         root = self.word_root(lemma, paradigm)
@@ -34,28 +27,10 @@ class MorphDatabase:
             forms.add(root + suffix)
         return forms
 
-    def all_forms_with_paradigm(self, lemma: str, paradigm: str) -> PAR_DATA:
-        """Constructs all forms for given lemma when its paradigm is known"""
-        forms = dict()
-        root = self.word_root(lemma, paradigm)
-        for form, tags in self.paradigms[paradigm]["affixes"].items():
-            forms[root + form] = forms.get(root + form, []) + tags
-        return forms
-
     def word_root(self, lemma: str, paradigm: str) -> str:
         """Returns the morphological root (resp. prefixes+root) for given lemma"""
         common_suffix = self.paradigms[paradigm]["<suffix>"].split("_")[0]
         return lemma if not common_suffix else lemma[:-len(common_suffix)]
-
-    def add_similar_forms(self, root: str, paradigm: str, form: str, found_lt: List[Dict[str, str]]) -> None:
-        """Searches through single paradigm and appends all lemma-tag pairs matching form"""
-        for paradigm_form, tags in self.paradigms[paradigm]["affixes"].items():
-            if root + paradigm_form == form:
-                found_lt += [dict(lemma=(root + self.paradigms[paradigm]["<suffix>"]), tag=tag) for tag in tags]
-
-    def find_paradigm(self, lemma: str) -> str:
-        """Returns paradigm for given lemma or '' if lemma is not in vocabulary"""
-        return self.vocab.get(lemma, "")
 
     def paradigm_suffixes(self) -> None:
         """Assigns suffix (part of word to be cut when creating other forms) to each paradigm in database."""
@@ -80,39 +55,6 @@ class MorphDatabase:
         train.close()
         test.close()
         return path + filename + train_suffix, path + filename + test_suffix
-
-    def matching_suffixes(self, word_suffixes: List[str]) -> Set[Tuple[str, str]]:
-        """For given word segmented to suffixes, finds all paradigms containing form with common suffix and
-        returns them with possible lemma of the word. Empty suffixes are counted in too."""
-        matching = set()
-        for paradigm, suffixes in self.paradigms.items():
-            for suffix in suffixes["affixes"].keys():
-                if suffix in word_suffixes or not suffix:
-                    lemma = (word_suffixes[-1].lstrip("_") if not suffix else
-                             word_suffixes[-1].lstrip("_")[:-len(suffix)]) \
-                        + self.paradigms[paradigm]["<suffix>"].split("_")[0]
-                    matching.add((paradigm, lemma))
-        return matching
-
-    def matching_suffixes_lemma(self, lemma_suffixes: List[str]) -> Set[str]:
-        """For given lemma segmented to suffixes, finds all paradigms which lemma has common suffix. All others
-        are possible too if using empty suffix, but this is handled elsewhere."""
-        # TODO update according to matching_suffixes
-        matching = set()
-        for paradigm, suffixes in self.paradigms.items():
-            if suffixes["<suffix>"].split("_")[0] in lemma_suffixes:
-                matching.add(paradigm)
-                continue
-        return matching
-
-    def suitable_paradigms(self, suffixes: Set[str]) -> Dict[str, Set[str]]:
-        """Filters given set of suffixes for each paradigm in database."""
-        par = dict()
-        for paradigm, par_suffixes in self.paradigms.items():
-            common = suffixes.intersection(par_suffixes["affixes"].keys())
-            if common:
-                par[paradigm] = common
-        return par
 
     def form_spread(self, freq_list: str) -> None:
         """Computes relative spread of given forms in corpus characterized by its alphabetically sorted

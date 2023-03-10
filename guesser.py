@@ -20,33 +20,8 @@ def guess_paradigm_from_corpus(segments: List[str], freq_list: str, morph_db: md
 def guess_paradigm(segments: List[str], morph_db, frame, only_lemmas: bool = False) -> Dict[str, int]:
     """Guesses the probabilities of paradigms for given word and its sub-word segmentation,
     bigger matched suffixes are prioritized. Note: very slow for non-lemmatized word"""
-    search_func = dbs.lemma_scores if only_lemmas else dbs.word_scores
-    return search_func(["".join(segments[-i:]) for i in range(1, len(segments) + 1)], frame, morph_db)
-
-
-def guess_paradigm_from_lemma(segments: List[str], frame) -> Dict[str, int]:
-    """Guesses the probabilities of paradigms for given lemma and its segmentation,
-    bigger matched suffixes are prioritized."""
-    return guess_paradigm(segments, None, frame, only_lemmas=True)
-
-
-def guess_lemma(segments: List[str], morph_db: md.MorphDatabase, frame) -> List[Tuple[int, str]]:
-    """For given segmented word, finds possible lemmas and tries to sort them by their likeliness."""
-    scores = []
-    all_possible_forms = set()
-    paradigm_possible_forms = dict()
-    for (matching_paradigm, lemma) in \
-            morph_db.matching_suffixes(["".join(segments[-i:]) for i in range(1, len(segments) + 1)]):
-        paradigm_possible_forms[matching_paradigm] = morph_db.only_forms(lemma, matching_paradigm)
-        all_possible_forms = all_possible_forms.union(paradigm_possible_forms[matching_paradigm])
-    occurred = dbs.occurring_forms(all_possible_forms, frame)
-    for paradigm, forms in paradigm_possible_forms.items():
-        count = 0
-        for form in forms:
-            count += 0 if form not in occurred else occurred[form]
-        scores.append((count, paradigm))
-    scores.sort(reverse=True)
-    return scores
+    # TODO update
+    pass
 
 
 def get_segment_method(seg_tool: str):
