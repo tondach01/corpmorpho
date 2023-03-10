@@ -125,3 +125,15 @@ def read_paradigms(par_file: str) -> Tuple[PARADIGM_AFFIXES_GROUPS, AFFIXES]:
 def correct_encoding(line: str) -> str:
     """Replaces wrongly encoded characters from dictionary and paradigm files"""
     return line.replace("ą", "š").replace("ľ", "ž").replace("»", "ť").replace("®", "Ž").replace("©", "Š")
+
+
+def clean_dic_file(dic_file: str) -> None:
+    """Removes unnecessary lines and information from dictionary and saves it in utf-8 encoding."""
+    from re import fullmatch
+    outfile = open(f"{dic_file}.cleaned.utf8", "w", encoding="utf-8")
+    with open(dic_file, encoding="windows-1250") as dic:
+        for line in dic:
+            if not fullmatch(r"[\w_]+:[\w_]+\|?[\d.,]*", line.strip()):
+                continue
+            print(correct_encoding(line.strip().split("|")[0]), file=outfile)
+    outfile.close()
