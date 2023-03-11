@@ -6,15 +6,17 @@ from typing import Dict, List, TextIO, Tuple
 
 
 def guess_paradigm_from_corpus(segments: List[str], freq_list: str, morph_db: md.MorphDatabase, seg_method)\
-        -> List[Tuple[int, int, str, str]]:
-    """Guesses paradigm of given word based on occurrences of similar words in given corpus. Returns sorted
-    list of tuples (found forms, not found forms, paradigm, lemma)"""
-    similars = dbs.similar_words(segments, freq_list, seg_method)
-    for root, suffixes in similars.items():
-        pass
-    # TODO compare with database
-    # TODO return scores and sort
-    pass
+        -> List[Tuple[float, str]]:
+    """Guesses paradigm of given word based on occurrences of similar words in given corpus and their spread.
+    Returns sorted list of tuples (paradigm, diff (lower the better))."""
+    scores = dict()
+    for prefix, frequencies in dbs.get_suffixes(segments, freq_list, seg_method).items():
+        print(f"{prefix}:\n\t{frequencies}")  # debug
+        for paradigm, diff in dbs.spread_scores(frequencies, morph_db).items():
+            scores[paradigm] = min(scores.get(paradigm, 100.0), diff)
+    result = [(diff, par) for par, diff in scores.items()]
+    result.sort()
+    return result
 
 
 def guess_paradigm(segments: List[str], morph_db, frame, only_lemmas: bool = False) -> Dict[str, int]:

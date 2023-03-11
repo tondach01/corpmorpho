@@ -90,26 +90,12 @@ def segment_dic_file(morph_db: md.MorphDatabase, seg_method, outfile: str, only_
                 print(f"{segments}:{lemma}:{paradigm}", file=out)
 
 
-def similar_words(segments: List[str], freq_list: str, seg_method) -> Dict[str, Dict[str, int]]:
-    """Finds words similar to given segmented one, based on their common segmentation."""
-    similar = dict()
-    for i in range(len(segments)):
-        similar["".join(segments[:i + 1])] = dict()
-    with open(freq_list, encoding="utf-8") as fl:
-        for line in fl:
-            values = line.strip().split()
-            corp_segments = seg_method(values[0])
-            for i in range(min(len(segments), len(corp_segments))):
-                if segments[:i + 1] == corp_segments[:i + 1]:
-                    similar["".join(segments[:i + 1])]["" if i == len(corp_segments) - 1
-                                                       else "".join(corp_segments[i + 1:])] = int(values[1])
-    return similar
-
-
 def normalize_spread(spread: Dict[str, float]) -> Dict[str, float]:
     """Normalizes given frequency spread by dividing each frequency by greatest occurred frequency."""
+    if not spread:
+        return dict()
     norm = max(spread.values())
-    return {suf: freq / norm for (suf, freq) in spread}
+    return {suf: freq / norm for (suf, freq) in spread.items()}
 
 
 def spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> float:
@@ -120,25 +106,40 @@ def spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> flo
     for suf, freq in word.items():
         if suf not in paradigm.keys():
             diff += freq
-    return diff / len(paradigm)
+    return diff / (1 if len(paradigm) == 0 else len(paradigm))
 
 
-def spread_scores(word: Dict[str, float], morph_db: md.MorphDatabase) -> Dict[str, float]:
+def spread_scores(word_suffixes: Dict[str, float], morph_db: md.MorphDatabase) -> Dict[str, float]:
     """Computes paradigm scores for given word based on its forms spread."""
-    word_normed = normalize_spread(word)
+    word_normed = normalize_spread(word_suffixes)
     scores = dict()
     for paradigm, data in morph_db.paradigms.items():
-        if not set(word.keys()).intersection(set(data["affixes"].keys())):
+        if not set(word_suffixes.keys()).intersection(set(data["affixes"].keys())):
             continue
-        scores[paradigm] = spread_difference(normalize_spread(data["spread"]), word_normed)
+        scores[paradigm] = spread_difference(normalize_spread(data.get("spread", dict())), word_normed)
     return scores
 
 
-def get_suffixes(word: List[str], corpus: str, seg_method) -> Dict[str, Dict[str, float]]:
+def freq_to_df(freq_list: str) -> pd.DataFrame:
+    """Transforms frequency list with segmentations to dataframe."""
+    df = pd.read_table(freq_list, names=["Word", "Segmented", "Frequency"])
+    return df
+
+
+def segment_freq_list(freq_list: str, seg_method, suffix: str) -> None:
+    """Adds info about segmentation to frequency list and stores it."""
+    outfile = open(f"{freq_list}.{suffix}", "w", encoding="utf-8")
+    with open(freq_list, encoding="utf-8") as fl:
+        for line in fl:
+            print(f"{'='.join(seg_method(line.split()[0]))}\t{line.strip()}", file=outfile)
+    outfile.close()
+
+
+def get_suffixes(word: List[str], freq_list: str, seg_method) -> Dict[str, Dict[str, float]]:
     """Lists through alphabetically sorted frequency list and finds all words with prefixes
     obtained with segmentation method matching with some prefix of segmented word."""
     suffixes = {pref: dict() for pref in ["".join(word[:i + 1]) for i in range(len(word))]}
-    fl = open(corpus, encoding="utf-8")
+    fl = open(freq_list, encoding="utf-8")
     line = fl.readline()
     while line.strip():
         if line[0] > word[0][0]:
