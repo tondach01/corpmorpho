@@ -34,10 +34,10 @@ def get_segment_method(seg_tool: str):
         if len(params) != 3:
             return baseline
         sp.SentencePieceTrainer.train(f'--input=..{os.sep}desam{os.sep}prevert_desam'
-                                      f' --model_prefix=m --model_type={params[1]} --vocab_size={params[2]}'
+                                      f' --model_prefix={params[1]}_{params[2]} --model_type={params[1]} --vocab_size={params[2]}'
                                       f' --user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
         m = sp.SentencePieceProcessor()
-        m.load("m.model")
+        m.load(f"{params[1]}_{params[2]}.model")
         return m.encode_as_pieces
     elif "morfessor" in seg_tool:
         import morfessor as mo
