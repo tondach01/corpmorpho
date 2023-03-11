@@ -21,5 +21,9 @@ clean_dic_file:
 sort_dic_file: clean_dic_file
 	sort -f data/current.dic.cleaned.utf8 > data/current.dic.cleaned.utf8.sorted
 
+dic_file_all_forms:
+	echo "import morph_database as md; md.MorphDatabase('data/current.dic', 'data/current.par').dic_file_all_forms('data/current.dic.cleaned.utf8.sorted'); exit()" | python3
+	sort -f --output=data/current.dic.cleaned.utf8.sorted.forms data/current.dic.cleaned.utf8.sorted.forms
+
 clean:
 	rm -rf data/cstenten17_mj2.freqlist.cleaned*

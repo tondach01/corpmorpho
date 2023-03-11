@@ -67,6 +67,13 @@ class MorphDatabase:
                 self.paradigms[paradigm]["spread"].update(
                     {word[len(paradigm) - len(self.paradigms[paradigm]["<suffix>"]):]: float(values[2])})
 
+    def dic_file_all_forms(self, dic_file: str) -> None:
+        outfile = open(f"{dic_file}.forms", "w", encoding="utf-8")
+        for word, paradigm in self.vocab.items():
+            for form in self.lemma_forms(word, paradigm):
+                print(f"{form}:{word}:{paradigm}", file=outfile)
+        outfile.close()
+
 
 def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:
     """Creates database from data in paradigm file."""
