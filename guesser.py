@@ -49,6 +49,10 @@ def get_segment_method(seg_tool: str):
         model.load_data(train_data, count_modifier=lambda x: 1)
         model.train_batch(algorithm="viterbi", max_epochs=max_epochs)
         return lambda x: model.viterbi_segment(x)[0]
+    elif "hft" in seg_tool:
+        import hftok.hftoks as hft
+        vocab = hft.read_vocab(f"..{os.sep}hftok{os.sep}desam.vocab")
+        return lambda x: hft.tokenize_string(x.lower(), vocab)
     return baseline
 
 
