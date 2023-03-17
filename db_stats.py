@@ -119,12 +119,14 @@ def spread_scores(word_suffixes: Dict[str, float], morph_db: md.MorphDatabase) -
     return scores
 
 
-def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, n: int = 5):
+def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, n: int = 5, threshold: float = 0.5):
     """Chooses n most suitable paradigms for given suffixes based on size of their intersection."""
     i_sizes = list()
     for paradigm, data in morph_db.paradigms.items():
         par_affixes = set(data["affixes"].keys())
-        i_sizes.append((len(word_suffixes.intersection(par_affixes)) / (len(par_affixes) + 1), paradigm))
+        rel_common = len(word_suffixes.intersection(par_affixes)) / (len(par_affixes) + 1)
+        if rel_common > threshold:
+            i_sizes.append((rel_common, paradigm))
     return sorted(i_sizes, reverse=True)[:n]
 
 
