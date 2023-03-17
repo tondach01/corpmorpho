@@ -37,7 +37,7 @@ substitus_tok:
 	cat substitus/desam.tok | java -jar substitus/substitus-20191210-thesis.jar tune-tokens --output-dir ./substitus --output-prefix desam.rtok
 
 substitus_segment_cstenten:
-	cut -f1 data/cstenten17_mj2.freqlist.cleaned.sorted_alpha | java -jar substitus/substitus-20191210-thesis.jar segmentize-words --frequency-list substitus/desam.lfwl --output-format binary | tr " " "=" | paste - data/cstenten17_mj2.freqlist.cleaned.sorted_alpha > data/cstenten17_mj2.freqlist.cleaned.sorted_alpha.substitus
+	cut -f1 data/cstenten17_mj2.freqlist.cleaned.sorted_alpha | java -jar substitus/substitus-20191210-thesis.jar segmentize-words --frequency-list substitus/desam.lfwl --output-format binary --frequency-list-limit 22M | tr " " "=" | paste - data/cstenten17_mj2.freqlist.cleaned.sorted_alpha > data/cstenten17_mj2.freqlist.cleaned.sorted_alpha.substitus
 
 clean:
 	rm -rf data/cstenten17_mj2.freqlist.cleaned*
