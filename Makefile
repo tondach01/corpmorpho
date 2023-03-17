@@ -25,5 +25,19 @@ dic_file_all_forms:
 	echo "import morph_database as md; md.MorphDatabase('data/current.dic', 'data/current.par').dic_file_all_forms('data/current.dic.cleaned.utf8.sorted'); exit()" | python3
 	sort -f --output=data/current.dic.cleaned.utf8.sorted.forms data/current.dic.cleaned.utf8.sorted.forms
 
+substitus_fwl:
+	cat desam/prevert_desam | java -jar substitus/substitus-20191210-thesis.jar create-frequency-list > substitus/desam.fwl
+
+substitus_sfwl: substitus_fwl
+	grep -E '^[0-9]+[[:space:]][[:alpha:]]+$$' substitus/desam.fwl | java -jar substitus/substitus-20191210-thesis.jar convert-frequency-list > substitus/desam.lfwl
+	java -jar substitus/substitus-20191210-thesis.jar segmentize-frequency-list --frequency-list substitus/desam.lfwl > substitus/desam.sfwl
+
+substitus_tok:
+	cat substitus/desam.sfwl | java -jar substitus/substitus-20191210-thesis.jar find-tokens > substitus/desam.tok
+	cat substitus/desam.tok | java -jar substitus/substitus-20191210-thesis.jar tune-tokens --output-dir ./substitus --output-prefix desam.rtok
+
+substitus_segment_cstenten:
+	cut -f1 data/cstenten17_mj2.freqlist.cleaned.sorted_alpha | java -jar substitus/substitus-20191210-thesis.jar segmentize-words --frequency-list substitus/desam.lfwl --output-format binary | tr " " "=" | paste - data/cstenten17_mj2.freqlist.cleaned.sorted_alpha > data/cstenten17_mj2.freqlist.cleaned.sorted_alpha.substitus
+
 clean:
 	rm -rf data/cstenten17_mj2.freqlist.cleaned*
