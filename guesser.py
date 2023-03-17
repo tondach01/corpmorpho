@@ -11,7 +11,7 @@ def guess_paradigm_from_corpus(segments: List[str], freq_list: str, morph_db: md
     Returns sorted list of tuples (paradigm, diff (lower the better))."""
     scores = dict()
     for prefix, frequencies in dbs.get_suffixes(segments, freq_list, seg_method).items():
-        print(f"{prefix}:\n\t{frequencies}")  # debug
+        # print(f"{prefix}:\n\t{frequencies}")  # debug
         for paradigm, diff in dbs.spread_scores(frequencies, morph_db).items():
             scores[paradigm] = min(scores.get(paradigm, 100.0), diff)
     result = [(diff, par) for par, diff in scores.items()]
@@ -33,11 +33,13 @@ def get_segment_method(seg_tool: str):
         params = seg_tool.split("_")
         if len(params) != 3:
             return baseline
-        sp.SentencePieceTrainer.train(f'--input=..{os.sep}desam{os.sep}prevert_desam'
-                                      f' --model_prefix={params[1]}_{params[2]} --model_type={params[1]} --vocab_size={params[2]}'
-                                      f' --user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
+        if not os.path.exists(f'temp{os.sep}{params[1]}_{params[2]}.model'):
+            sp.SentencePieceTrainer.train(f'--input=desam{os.sep}prevert_desam'
+                                          f' --model_prefix=temp{os.sep}{params[1]}_{params[2]} --model_type={params[1]}'
+                                          f' --vocab_size={params[2]}'
+                                          f' --user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
         m = sp.SentencePieceProcessor()
-        m.load(f"{params[1]}_{params[2]}.model")
+        m.load(f"temp{os.sep}{params[1]}_{params[2]}.model")
         return m.encode_as_pieces
     elif "morfessor" in seg_tool:
         import morfessor as mo
@@ -46,21 +48,21 @@ def get_segment_method(seg_tool: str):
         if len(params) == 2 and params[1].isdigit():
             max_epochs = int(params[1])
         io = mo.MorfessorIO()
-        train_data = list(io.read_corpus_file(f"..{os.sep}desam{os.sep}prevert_desam"))
+        train_data = list(io.read_corpus_file(f"desam{os.sep}prevert_desam"))
         model = mo.BaselineModel()
         model.load_data(train_data, count_modifier=lambda x: 1)
         model.train_batch(algorithm="viterbi", max_epochs=max_epochs)
-        return lambda x: model.viterbi_segment(x)[0]
+        return lambda x: model.viterbi_segment(x, maxlen=5)[0]
     elif "hft" in seg_tool:
         import hftok.hftoks as hft
-        vocab = hft.read_vocab(f"..{os.sep}hftok{os.sep}desam.vocab")
+        vocab = hft.read_vocab(f"hftok{os.sep}desam.vocab")
         return lambda x: hft.tokenize_string(x.lower(), vocab)
     return baseline
 
 
 def main(source: TextIO, lemma: bool = False, seg_tool: str = ""):
-    morph_db = md.MorphDatabase(f"..{os.sep}data{os.sep}current.dic", f"..{os.sep}data{os.sep}current.par")
-    corpus = f"..{os.sep}desam{os.sep}desam"
+    morph_db = md.MorphDatabase(f"data{os.sep}current.dic", f"data{os.sep}current.par")
+    corpus = f"desam{os.sep}desam"
     frame = dbs.lemmas_to_dataframe(corpus, morph_db)
     segment = get_segment_method(seg_tool)
     word = source.readline()
@@ -85,9 +87,7 @@ if __name__ == "__main__":
 
     if not os.path.exists(f".{os.sep}temp"):
         os.mkdir(f".{os.sep}temp")
-    os.chdir(f".{os.sep}temp")
     src = sys.stdin if args.infile is None else open(args.infile, encoding="utf-8")
     main(src, args.lemma, args.use_segmenter)
     if args.infile is None:
         src.close()
-    os.chdir("..")

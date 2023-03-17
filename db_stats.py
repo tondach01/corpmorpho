@@ -113,11 +113,19 @@ def spread_scores(word_suffixes: Dict[str, float], morph_db: md.MorphDatabase) -
     """Computes paradigm scores for given word based on its forms spread."""
     word_normed = normalize_spread(word_suffixes)
     scores = dict()
-    for paradigm, data in morph_db.paradigms.items():
-        if not set(word_suffixes.keys()).intersection(set(data["affixes"].keys())):
-            continue
-        scores[paradigm] = spread_difference(normalize_spread(data.get("spread", dict())), word_normed)
+    for _, paradigm in n_best_paradigms(set(word_suffixes.keys()), morph_db):
+        scores[paradigm] = spread_difference(
+            normalize_spread(morph_db.paradigms[paradigm].get("spread", dict())), word_normed)
     return scores
+
+
+def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, n: int = 5):
+    """Chooses n most suitable paradigms for given suffixes based on size of their intersection."""
+    i_sizes = list()
+    for paradigm, data in morph_db.paradigms.items():
+        par_affixes = set(data["affixes"].keys())
+        i_sizes.append((len(word_suffixes.intersection(par_affixes)) / (len(par_affixes) + 1), paradigm))
+    return sorted(i_sizes, reverse=True)[:n]
 
 
 def freq_to_df(freq_list: str) -> pd.DataFrame:
