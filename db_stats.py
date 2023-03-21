@@ -109,25 +109,38 @@ def spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> flo
     return diff / (1 if len(paradigm) == 0 else len(paradigm))
 
 
-def spread_scores(word_suffixes: Dict[str, float], morph_db: md.MorphDatabase) -> Dict[str, float]:
+def spread_scores(word_suffixes: Dict[str, float], morph_db: md.MorphDatabase, suffix: str) -> Dict[str, float]:
     """Computes paradigm scores for given word based on its forms spread."""
     word_normed = normalize_spread(word_suffixes)
     scores = dict()
-    for _, paradigm in n_best_paradigms(set(word_suffixes.keys()), morph_db):
+    for paradigm in n_best_paradigms(set(word_suffixes.keys()), morph_db, suffix):
         scores[paradigm] = spread_difference(
             normalize_spread(morph_db.paradigms[paradigm].get("spread", dict())), word_normed)
     return scores
 
 
-def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, n: int = 5, threshold: float = 0.5):
-    """Chooses n most suitable paradigms for given suffixes based on size of their intersection."""
+def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, suffix: str, n: int = 5,
+                     threshold: float = 0.4) -> List[str]:
+    """Chooses n most suitable paradigms for given suffixes based on size of their intersection. Can return more than
+    n paradigms if they have the same score as the n-th one."""
     i_sizes = list()
     for paradigm, data in morph_db.paradigms.items():
         par_affixes = set(data["affixes"].keys())
-        rel_common = len(word_suffixes.intersection(par_affixes)) / (len(par_affixes) + 1)
+        if suffix not in par_affixes:
+            continue
+        # penalize single-form paradigms
+        rel_common = (len(word_suffixes.intersection(par_affixes)) + len(par_affixes)) / (len(par_affixes) + 1)
         if rel_common > threshold:
             i_sizes.append((rel_common, paradigm))
-    return sorted(i_sizes, reverse=True)[:n]
+    result = []
+    nth_score = 1.0
+    for i, (score, paradigm) in enumerate(sorted(i_sizes, reverse=True)):
+        if i == n:
+            nth_score = score
+        elif i > n and score < nth_score:
+            break
+        result.append(paradigm)
+    return result
 
 
 def freq_to_df(freq_list: str) -> pd.DataFrame:
