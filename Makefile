@@ -15,6 +15,9 @@ filter_for_morph_db:
 hftok_learn:
 	python3 hftok/hftoks.py learn hftok/desam.pretok hftok/desam.vocab
 
+hftok_segment: hftok_learn
+	cut -f1 data/cstenten17_mj2.freqlist.cleaned.sorted_alpha | hftok/pretokenize | python3 hftok/hftoks.py tokenize hftok/desam.vocab | tr " " "=" | paste - data/cstenten17_mj2.freqlist.cleaned.sorted_alpha > data/cstenten17_mj2.freqlist.cleaned.sorted_alpha.hft
+
 clean_dic_file:
 	echo "import morph_database as md; md.clean_dic_file('data/current.dic'); exit()" | python3
 

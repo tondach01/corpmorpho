@@ -145,24 +145,21 @@ def segment_freq_list(freq_list: str, seg_method, suffix: str) -> None:
     outfile.close()
 
 
-def get_suffixes(word: List[str], freq_list: str, seg_method) -> Dict[str, Dict[str, float]]:
-    """Lists through alphabetically sorted frequency list and finds all words with prefixes
+def get_suffixes(word: List[str], freq_list: str) -> Dict[str, Dict[str, float]]:
+    """Lists through alphabetically sorted segmented frequency list and finds all words with prefixes
     obtained with segmentation method matching with some prefix of segmented word."""
     suffixes = {pref: dict() for pref in ["".join(word[:i + 1]) for i in range(len(word))]}
     fl = open(freq_list, encoding="utf-8")
-    line = fl.readline()
-    while line.strip():
-        if line[0] > word[0][0]:
+    for line in fl:
+        values = line.strip().split()
+        if values[1][0] > word[0][0]:
             break
         if not line.startswith(word[0]):
-            line = fl.readline()
             continue
-        values = line.strip().split()
-        segments = seg_method(values[0])
+        segments = values[0].strip("¦=▁").split("=")
         for segment in ["".join(segments[:i + 1]) for i in range(len(segments))]:
             if segment in suffixes.keys():
-                suffixes[segment][values[0][len(segment):]] = float(values[1])
-        line = fl.readline()
+                suffixes[segment][values[1][len(segment):]] = float(values[2].strip())
     fl.close()
     return suffixes
 
