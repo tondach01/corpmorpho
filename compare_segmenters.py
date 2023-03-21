@@ -48,7 +48,10 @@ def main():
     start = time()
     morph_db = md.MorphDatabase(f"data{sep}current.dic", f"data{sep}current.par",
                                 freq_list=f"data{sep}cstenten17_mj2.freqlist.cleaned.sorted_alpha.filtered")
-    fl = f"data/cstenten17_mj2.freqlist.cleaned.sorted_alpha.{args.segmenter if args.segmenter else 'baseline'}"
+    fl = f"data{sep}cstenten17_mj2.freqlist.cleaned.sorted_alpha.{args.segmenter if args.segmenter else 'baseline'}"
+    if not os.path.exists(fl):
+        print(fl, " file not found")
+        return
     segmented_guess(fl, morph_db, segmenter=args.segmenter, only_lemmas=args.lemmas, debug=args.debug)
     print(f"finished in {round(time() - start)}s")
 
