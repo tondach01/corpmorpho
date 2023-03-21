@@ -39,23 +39,6 @@ class MorphDatabase:
             # keys() iterates in insertion order
             self.paradigms[paradigm]["<suffix>"] = paradigm[lemma.rfind(list(suffixes["affixes"].keys())[0]):]
 
-    def split_vocabulary(self, ratio: int = 10, filename: str = "", path: str = "",
-                         train_suffix: str = "_train.dic", test_suffix: str = "_test.dic") -> Tuple[str, str]:
-        """Split the database's vocabulary into two separate files of sizes
-        approx. 1 : <ratio> - 1, returns their paths"""
-        train = open(path + filename + train_suffix, "w", encoding="windows-1250")
-        test = open(path + filename + test_suffix, "w", encoding="windows-1250")
-        i = 0
-        for lemma, paradigm in self.vocab.items():
-            if (i % ratio != 0) or lemma == paradigm.split("_")[0]:
-                print(f"{lemma}:{paradigm}", file=train)
-            else:
-                print(f"{lemma}:{paradigm}", file=test)
-            i += 1
-        train.close()
-        test.close()
-        return path + filename + train_suffix, path + filename + test_suffix
-
     def form_spread(self, freq_list: str) -> None:
         """Computes relative spread of given forms in corpus characterized by its alphabetically sorted
         filtered frequency list."""
@@ -73,6 +56,14 @@ class MorphDatabase:
             for form in self.lemma_forms(word, paradigm):
                 print(f"{form}:{word}:{paradigm}", file=outfile)
         outfile.close()
+
+    def same_paradigms(self) -> None:
+        for par, data in self.paradigms.items():
+            for other_par, other_data in self.paradigms.items():
+                if par <= other_par:
+                    continue
+                if data["affixes"] == other_data["affixes"]:
+                    print(f"{par} == {other_par}")
 
 
 def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:
