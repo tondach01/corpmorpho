@@ -28,7 +28,7 @@ def segmented_guess(freq_list: str, morph_db: md.MorphDatabase, segmenter: str =
     with open(test_vocab, encoding="utf-8") as test:
         for line in test:
             print(line.strip(), file=log_file)
-            segments = segment(line.strip().split(":")[0])
+            segments = segment(line.strip().split(":")[0].lower())
             scores = g.guess_paradigm_from_corpus(segments, freq_list, morph_db)
             print("\t" + ", ".join([par for _, par in scores]), file=log_file)
     if not debug:

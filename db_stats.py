@@ -130,9 +130,10 @@ def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, suffix
             continue
         # penalize single-form paradigms
         # rel_common = (len(word_suffixes.intersection(par_affixes)) + len(par_affixes)) / (len(par_affixes) + 1)
-        rel_common = len(word_suffixes.intersection(par_affixes))
-        if rel_common > threshold:
-            i_sizes.append((rel_common, paradigm))
+        common = len(word_suffixes.intersection(par_affixes))
+        i_sizes.append((common, paradigm))
+        # if rel_common > threshold:
+        #     i_sizes.append((rel_common, paradigm))
     result = []
     nth_score = 1.0
     for i, (score, paradigm) in enumerate(sorted(i_sizes, reverse=True)):

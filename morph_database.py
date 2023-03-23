@@ -12,9 +12,9 @@ class MorphDatabase:
     """This class represents morphological database obtained from dictionary and paradigm files. Holds
     attributes vocab (dictionary lemma:paradigm) and paradigms (paradigm:suffixes and tags)."""
 
-    def __init__(self, dic_file: str, par_file: str, freq_list: str = ""):
+    def __init__(self, dic_file: str, par_file: str, freq_list: str = "", only_formal: bool = False):
         self.vocab = vocabulary(dic_file)
-        self.paradigms = paradigm_db(par_file)
+        self.paradigms = paradigm_db(par_file, only_formal)
         self.paradigm_suffixes()
         if freq_list:
             self.form_spread(freq_list)
@@ -66,7 +66,7 @@ class MorphDatabase:
                     print(f"{par} == {other_par}")
 
 
-def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:
+def paradigm_db(par_file: str, only_formal: bool = False) -> PARADIGM_AFFIXES_GROUPS:
     """Creates database from data in paradigm file."""
     translated = dict()
     paradigms, affixes = read_paradigms(par_file)
@@ -76,9 +76,13 @@ def paradigm_db(par_file: str) -> PARADIGM_AFFIXES_GROUPS:
         for form, suffixes in forms.items():
             for alias in suffixes:
                 for affix in affixes[alias]:
+                    tags = affix[1]
+                    if only_formal:
+                        tags = list(filter(lambda x: "wH" not in x, tags))
                     suffix = form + affix[0]
-                    translated[paradigm]["affixes"][suffix] = translated[paradigm].get(suffix, [])
-                    translated[paradigm]["affixes"][suffix].extend(affix[1])
+                    if tags:
+                        translated[paradigm]["affixes"][suffix] = translated[paradigm].get(suffix, [])
+                        translated[paradigm]["affixes"][suffix].extend(tags)
     return translated
 
 
