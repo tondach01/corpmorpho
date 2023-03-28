@@ -102,31 +102,33 @@ def spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> flo
     """Computes difference of normalized spreads of given paradigm and word."""
     diff = 0
     for suf, freq in paradigm.items():
-        diff += abs(freq - word.get(suf, 0.0))
-    for suf, freq in word.items():
-        if suf not in paradigm.keys():
-            diff += freq
-    return diff / (1 if len(paradigm) == 0 else len(paradigm))
+        diff += abs(freq - word.get(suf, 0.0)) / (len(suf) + 1)
+    # for suf, freq in word.items():
+    #     if suf not in paradigm.keys():
+    #         diff += freq
+    return diff  # / (1 if len(paradigm) == 0 else len(paradigm))
 
 
-def spread_scores(word_suffixes: Dict[str, float], morph_db: md.MorphDatabase, suffix: str) -> Dict[str, float]:
+def spread_scores(word_suffixes: Dict[str, float], morph_db: md.MorphDatabase, suffix: str, only_lemmas: bool = False) -> Dict[str, float]:
     """Computes paradigm scores for given word based on its forms spread."""
     word_normed = normalize_spread(word_suffixes)
     scores = dict()
-    for paradigm in n_best_paradigms(set(word_suffixes.keys()), morph_db, suffix):
+    for paradigm in n_best_paradigms(set(word_suffixes.keys()), morph_db, suffix, only_lemmas):
         scores[paradigm] = spread_difference(
             normalize_spread(morph_db.paradigms[paradigm].get("spread", dict())), word_normed)
     return scores
 
 
 def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, suffix: str, n: int = 5,
-                     threshold: float = 0.4) -> List[str]:
+                     threshold: float = 0.4, only_lemmas: bool = False) -> List[str]:
     """Chooses n most suitable paradigms for given suffixes based on size of their intersection. Can return more than
     n paradigms if they have the same score as the n-th one."""
     i_sizes = list()
     for paradigm, data in morph_db.paradigms.items():
         par_affixes = set(data["affixes"].keys())
         if suffix not in par_affixes:
+            continue
+        if only_lemmas and suffix != data["<suffix>"].split("_")[0]:
             continue
         # penalize single-form paradigms
         # rel_common = (len(word_suffixes.intersection(par_affixes)) + len(par_affixes)) / (len(par_affixes) + 1)

@@ -29,7 +29,7 @@ def segmented_guess(freq_list: str, morph_db: md.MorphDatabase, segmenter: str =
         for line in test:
             print(line.strip(), file=log_file)
             segments = segment(line.strip().split(":")[0].lower())
-            scores = g.guess_paradigm_from_corpus(segments, freq_list, morph_db)
+            scores = g.guess_paradigm_from_corpus(segments, freq_list, morph_db, only_lemmas)
             print("\t" + ", ".join([par for _, par in scores]), file=log_file)
     if not debug:
         log_file.close()
