@@ -95,6 +95,8 @@ def normalize_spread(spread: Dict[str, float]) -> Dict[str, float]:
     if not spread:
         return dict()
     norm = max(spread.values())
+    if norm == 0.0:
+        return {suf: 0.0 for (suf, _) in spread.items()}
     return {suf: freq / norm for (suf, freq) in spread.items()}
 
 
@@ -102,25 +104,36 @@ def spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> flo
     """Computes difference of normalized spreads of given paradigm and word."""
     diff = 0
     for suf, freq in paradigm.items():
-        diff += abs(freq - word.get(suf, 0.0)) / (len(suf) + 1)
+        diff += abs(freq - word.get(suf, 0.0))
     # for suf, freq in word.items():
     #     if suf not in paradigm.keys():
     #         diff += freq
     return diff  # / (1 if len(paradigm) == 0 else len(paradigm))
 
 
-def spread_scores(word_suffixes: Dict[str, float], morph_db: md.MorphDatabase, suffix: str, only_lemmas: bool = False) -> Dict[str, float]:
+def spread_scores(segments: List[str], freq_list: str, morph_db: md.MorphDatabase, only_lemmas: bool = False) -> Dict[str, float]:
     """Computes paradigm scores for given word based on its forms spread."""
-    word_normed = normalize_spread(word_suffixes)
     scores = dict()
-    for paradigm in n_best_paradigms(set(word_suffixes.keys()), morph_db, suffix, only_lemmas):
+    n_most_common = dict()
+    normed = dict()
+    for prefix, word_suffixes in get_suffixes(segments, freq_list).items():
+        suffix = "".join(segments)[len(prefix):]
+        n_best = n_best_paradigms(set(word_suffixes.keys()), morph_db, suffix, only_lemmas=only_lemmas)
+        for (common, paradigm) in n_best:
+            if n_most_common.get(paradigm, (0, ""))[0] < common:
+                if prefix not in normed.keys():
+                    normed[prefix] = normalize_spread(word_suffixes)
+                n_most_common[paradigm] = (common, prefix)
+    for paradigm, (common, prefix) in n_most_common.items():
         scores[paradigm] = spread_difference(
-            normalize_spread(morph_db.paradigms[paradigm].get("spread", dict())), word_normed)
+            normalize_spread(morph_db.paradigms[paradigm].get("spread", dict())),
+            normed[prefix]
+        ) / common
     return scores
 
 
 def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, suffix: str, n: int = 5,
-                     threshold: float = 0.4, only_lemmas: bool = False) -> List[str]:
+                     only_lemmas: bool = False) -> List[Tuple[int, str]]:
     """Chooses n most suitable paradigms for given suffixes based on size of their intersection. Can return more than
     n paradigms if they have the same score as the n-th one."""
     i_sizes = list()
@@ -136,14 +149,14 @@ def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, suffix
         i_sizes.append((common, paradigm))
         # if rel_common > threshold:
         #     i_sizes.append((rel_common, paradigm))
+    nth_score = 1
     result = []
-    nth_score = 1.0
     for i, (score, paradigm) in enumerate(sorted(i_sizes, reverse=True)):
-        if i == n:
+        if i == (n - 1):
             nth_score = score
-        elif i > n and score < nth_score:
-            break
-        result.append(paradigm)
+        elif i >= n and score < nth_score:
+            return result
+        result.append((score, paradigm))
     return result
 
 

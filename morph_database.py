@@ -1,11 +1,10 @@
 """This file contains tools for creating and using morphological database."""
-from typing import Tuple, Dict, List, Union, Set
+from typing import Tuple, Dict, List, Set, Any
 
 AFFIXES = Dict[str, List[Tuple[str, List[str]]]]
-PAR_DATA = Dict[str, Union[str, Dict[str, List[str]], Dict[str, float]]]
-PARADIGM_AFFIXES_GROUPS = Dict[str, PAR_DATA]
-MORPH_DATABASE = Dict[str, Dict[str, Dict[str, int]]]
-VOCABULARY = Dict[str, str]
+PAR_DATA = Dict[str, Any]
+DB_PARADIGMS = Dict[str, PAR_DATA]
+DB_VOCABULARY = Dict[str, str]
 
 
 class MorphDatabase:
@@ -40,15 +39,18 @@ class MorphDatabase:
             self.paradigms[paradigm]["<suffix>"] = paradigm[lemma.rfind(list(suffixes["affixes"].keys())[0]):]
 
     def form_spread(self, freq_list: str) -> None:
-        """Computes relative spread of given forms in corpus characterized by its alphabetically sorted
+        """Computes absolute spread of given forms in corpus characterized by its alphabetically sorted
         filtered frequency list."""
+        for paradigm, data in self.paradigms.items():
+            self.paradigms[paradigm]["spread"] = dict()
+            for affix in data["affixes"].keys():
+                self.paradigms[paradigm]["spread"][affix] = 0.0
         with open(freq_list, encoding="utf-8") as fl:
             for line in fl:
                 values = line.strip().split()
                 paradigm, word = values[0], values[1]
-                self.paradigms[paradigm]["spread"] = self.paradigms[paradigm].get("spread", dict())
-                self.paradigms[paradigm]["spread"].update(
-                    {word[len(paradigm) - len(self.paradigms[paradigm]["<suffix>"]):]: float(values[2])})
+                self.paradigms[paradigm]["spread"][word[len(paradigm) -
+                                                        len(self.paradigms[paradigm]["<suffix>"]):]] = float(values[2])
 
     def dic_file_all_forms(self, dic_file: str) -> None:
         outfile = open(f"{dic_file}.forms", "w", encoding="utf-8")
@@ -66,7 +68,7 @@ class MorphDatabase:
                     print(f"{par} == {other_par}")
 
 
-def paradigm_db(par_file: str, only_formal: bool = False) -> PARADIGM_AFFIXES_GROUPS:
+def paradigm_db(par_file: str, only_formal: bool = False) -> DB_PARADIGMS:
     """Creates database from data in paradigm file."""
     translated = dict()
     paradigms, affixes = read_paradigms(par_file)
@@ -86,7 +88,7 @@ def paradigm_db(par_file: str, only_formal: bool = False) -> PARADIGM_AFFIXES_GR
     return translated
 
 
-def vocabulary(dic_file: str) -> VOCABULARY:
+def vocabulary(dic_file: str) -> DB_VOCABULARY:
     """Creates vocabulary from data in dictionary file"""
     vocab = dict()
     d = open(dic_file, "r", encoding="windows-1250")
@@ -100,7 +102,7 @@ def vocabulary(dic_file: str) -> VOCABULARY:
     return vocab
 
 
-def read_paradigms(par_file: str) -> Tuple[PARADIGM_AFFIXES_GROUPS, AFFIXES]:
+def read_paradigms(par_file: str) -> Tuple[DB_PARADIGMS, AFFIXES]:
     """Reads paradigms file to dictionaries which will be merged to paradigm database"""
     affixes = dict()
     database = dict()

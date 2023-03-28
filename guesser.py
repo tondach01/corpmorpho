@@ -9,13 +9,7 @@ def guess_paradigm_from_corpus(segments: List[str], freq_list: str, morph_db: md
                                only_lemmas: bool = False) -> List[Tuple[float, str]]:
     """Guesses paradigm of given word based on occurrences of similar words in given corpus and their spread.
     Returns sorted list of tuples (paradigm, diff (lower the better))."""
-    scores = dict()
-    for prefix, frequencies in dbs.get_suffixes(segments, freq_list).items():
-        # print(f"{prefix}:\n\t{frequencies}")  # debug
-        suffix = "".join(segments)[len(prefix):]
-        for paradigm, diff in dbs.spread_scores(frequencies, morph_db, suffix, only_lemmas).items():
-            scores[paradigm] = min(scores.get(paradigm, 100.0), diff)
-    result = [(diff, par) for par, diff in scores.items()]
+    result = [(diff, par) for par, diff in dbs.spread_scores(segments, freq_list, morph_db, only_lemmas).items()]
     result.sort()
     return result
 
