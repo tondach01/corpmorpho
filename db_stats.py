@@ -24,31 +24,50 @@ class FreqTreeNode:
             return 0
         if not item:
             return self.value
-        if item[0] not in self.children.keys():
-            return 0
-        return self.children[item[0]].__getitem__(item[1:])
+        if item[0] in self.children.keys():
+            return self.children[item[0]].__getitem__(item[1:])
+        elif item[0].upper() in self.children.keys():
+            return self.children[item[0].upper()].__getitem__(item[1:])
+        return 0
 
     def feed(self, freq_list: str, prefix: str = "") -> 'FreqTreeNode':
         with open(freq_list, encoding="utf-8") as fl:
             for line in fl:
                 values = line.strip().split()
                 if values[1].startswith(prefix):
-                    self.add(values[1], int(values[2]))
+                    self.add(uppercase_format(values[0]), int(values[2]))
         return self
 
     def suffixes(self, prefix: str, suffix: str = "") -> Dict[str, int]:
+        suffixes = dict()
         if prefix:
-            if prefix[0] not in self.children.keys():
-                return dict()
-            return self.children[prefix[0]].suffixes(prefix[1:])
+            if prefix[0] in self.children.keys():
+                suffixes.update(self.children[prefix[0]].suffixes(prefix[1:]))
+            if prefix[0].upper() in self.children.keys():
+                suffixes.update(self.children[prefix[0].upper()].suffixes(prefix[1:]))
+            return suffixes
         if not self.children:
             return {suffix: self.value}
-        suffixes = dict()
         if self.value != 0:
             suffixes[suffix] = self.value
         for letter, node in self.children.items():
-            suffixes.update(node.suffixes(prefix, suffix + letter))
+            if not suffix and letter.islower():
+                continue
+            suffixes.update(node.suffixes(prefix, suffix + letter.lower()))
         return suffixes
+
+
+def uppercase_format(segmentation: str):
+    clean = segmentation.strip("¦=▁")
+    formatted = ""
+    for i in range(len(clean)):
+        if clean[i] == "=":
+            continue
+        if i > 0 and clean[i-1] == "=":
+            formatted += clean[i].upper()
+        else:
+            formatted += clean[i]
+    return formatted
 
 
 def lemmas(corpus: str):
