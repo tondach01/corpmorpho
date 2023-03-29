@@ -5,6 +5,52 @@ import pandas as pd
 import numpy as np
 
 
+class FreqTreeNode:
+    def __init__(self):
+        self.value = 0
+        self.children = dict()
+
+    def add(self, word: str, freq: int):
+        if not word:
+            self.value = freq
+            return
+        else:
+            if word[0] not in self.children.keys():
+                self.children[word[0]] = FreqTreeNode()
+            self.children[word[0]].add(word[1:], freq)
+
+    def __getitem__(self, item) -> int:
+        if not isinstance(item, str):
+            return 0
+        if not item:
+            return self.value
+        if item[0] not in self.children.keys():
+            return 0
+        return self.children[item[0]].__getitem__(item[1:])
+
+    def feed(self, freq_list: str, prefix: str = "") -> 'FreqTreeNode':
+        with open(freq_list, encoding="utf-8") as fl:
+            for line in fl:
+                values = line.strip().split()
+                if values[1].startswith(prefix):
+                    self.add(values[1], int(values[2]))
+        return self
+
+    def suffixes(self, prefix: str, suffix: str = "") -> Dict[str, int]:
+        if prefix:
+            if prefix[0] not in self.children.keys():
+                return dict()
+            return self.children[prefix[0]].suffixes(prefix[1:])
+        if not self.children:
+            return {suffix: self.value}
+        suffixes = dict()
+        if self.value != 0:
+            suffixes[suffix] = self.value
+        for letter, node in self.children.items():
+            suffixes.update(node.suffixes(prefix, suffix + letter))
+        return suffixes
+
+
 def lemmas(corpus: str):
     """Generates all lemmas from given corpus."""
     for word in corpus_generator(corpus, lemmas=True):
@@ -162,7 +208,7 @@ def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, suffix
 
 def freq_to_df(freq_list: str) -> pd.DataFrame:
     """Transforms frequency list with segmentations to dataframe."""
-    df = pd.read_table(freq_list, names=["Word", "Segmented", "Frequency"])
+    df = pd.read_table(freq_list, names=["Segmented", "Word", "Frequency"])
     return df
 
 
