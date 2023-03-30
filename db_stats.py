@@ -4,11 +4,13 @@ from typing import Dict, List, Set, Tuple
 
 
 class FreqTreeNode:
+    """Class representing a node in frequency list tree."""
     def __init__(self):
         self.value = 0
         self.children = dict()
 
     def add(self, word: str, freq: int):
+        """Integrate word and its frequency into a tree."""
         if not word:
             self.value = freq
             return
@@ -29,6 +31,8 @@ class FreqTreeNode:
         return 0
 
     def feed(self, freq_list: str, prefix: str = "") -> 'FreqTreeNode':
+        """Integrate all lines <segmentation word frequency> from frequency list into a tree. Adding can
+        be limited to words starting with given prefix."""
         with open(freq_list, encoding="utf-8") as fl:
             for line in fl:
                 values = line.strip().split()
@@ -37,6 +41,8 @@ class FreqTreeNode:
         return self
 
     def suffixes(self, prefix: str, suffix: str = "") -> Dict[str, int]:
+        """Returns all suffixes and their frequencies for given prefix. Suffix is auxiliary parameter
+        used in recursion."""
         suffixes = dict()
         if prefix:
             if prefix[0] in self.children.keys():
@@ -56,6 +62,8 @@ class FreqTreeNode:
 
 
 def uppercase_format(segmentation: str):
+    """Converts '=' (segments separated with =) segmentation format into uppercase (starts of segments
+    are in uppercase)."""
     clean = segmentation.strip("¦=▁")
     formatted = ""
     for i in range(len(clean)):
@@ -134,7 +142,8 @@ def spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> flo
     return diff  # / (1 if len(paradigm) == 0 else len(paradigm))
 
 
-def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphDatabase, only_lemmas: bool = False) -> Dict[str, float]:
+def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphDatabase, only_lemmas: bool = False) \
+        -> Dict[str, float]:
     """Computes paradigm scores for given word based on its forms spread."""
     scores = dict()
     n_most_common = dict()

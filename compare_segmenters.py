@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-import os
 import sys
 
 import morph_database as md
 import guesser as g
 import db_stats as dbs
-from os import sep
+from os import sep, path, mkdir
 
 
 def baseline_guess(corpus: str, morph_db: md.MorphDatabase) -> None:
@@ -47,13 +46,13 @@ def main():
     parser.add_argument("-d", "--debug", action="store_true", default=False)
     parser.add_argument("-l", "--lemmas", action="store_true", default=False)
     args = parser.parse_args()
-    if not os.path.exists(f".{sep}temp"):
-        os.mkdir(f".{sep}temp")
+    if not path.exists(f".{sep}temp"):
+        mkdir(f".{sep}temp")
     start = time()
     morph_db = md.MorphDatabase(f"data{sep}current.dic", f"data{sep}current.par",
                                 freq_list=f"data{sep}cstenten17_mj2.freqlist.cleaned.sorted_alpha.filtered")
     fl = f"data{sep}cstenten17_mj2.freqlist.cleaned.sorted_alpha.{args.segmenter if args.segmenter else 'baseline'}"
-    if not os.path.exists(fl):
+    if not path.exists(fl):
         print(fl, " file not found")
         return
     segmented_tree_guess(fl, morph_db, segmenter=args.segmenter, only_lemmas=args.lemmas, debug=args.debug)

@@ -30,8 +30,8 @@ def get_segment_method(seg_tool: str):
             return baseline
         if not os.path.exists(f'temp{os.sep}{params[1]}_{params[2]}.model'):
             sp.SentencePieceTrainer.train(f'--input=desam{os.sep}prevert_desam'
-                                          f' --model_prefix=temp{os.sep}{params[1]}_{params[2]} --model_type={params[1]}'
-                                          f' --vocab_size={params[2]}'
+                                          f' --model_prefix=temp{os.sep}{params[1]}_{params[2]}'
+                                          f' --model_type={params[1]} --vocab_size={params[2]}'
                                           f' --user_defined_symbols=<doc>,</doc>,<head>,</head>,<s>,</s>,<phr>,</phr>')
         m = sp.SentencePieceProcessor()
         m.load(f"temp{os.sep}{params[1]}_{params[2]}.model")
