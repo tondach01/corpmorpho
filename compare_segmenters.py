@@ -10,29 +10,7 @@ from os import sep
 
 def baseline_guess(corpus: str, morph_db: md.MorphDatabase) -> None:
     """Tries to guess paradigm for each entry in test_vocab without explicit segmentation."""
-    return segmented_guess(corpus, morph_db)
-
-
-def segmented_guess(freq_list: str, morph_db: md.MorphDatabase, segmenter: str = "", only_lemmas: bool = False,
-                    debug: bool = False) -> None:
-    """Tries to guess paradigm for each lemma in test_vocab given its segmentation (if given segmenter)."""
-    if debug:
-        log_file = sys.stdout
-    else:
-        log_file = open(f"logs{sep}log_{segmenter}_{'lemmas' if only_lemmas else 'forms'}", "w", encoding="utf-8")
-    if only_lemmas:
-        test_vocab = f"data{sep}current.dic.cleaned.utf8.sorted"
-    else:
-        test_vocab = f"data{sep}current.dic.cleaned.utf8.sorted.forms"
-    segment = g.get_segment_method(segmenter)
-    with open(test_vocab, encoding="utf-8") as test:
-        for line in test:
-            print(line.strip(), file=log_file)
-            segments = segment(line.strip().split(":")[0].lower())
-            scores = g.guess_paradigm_from_corpus(segments, freq_list, morph_db, only_lemmas)
-            print("\t" + ", ".join([par for _, par in scores]), file=log_file)
-    if not debug:
-        log_file.close()
+    return segmented_tree_guess(corpus, morph_db)
 
 
 def segmented_tree_guess(freq_list: str, morph_db: md.MorphDatabase, segmenter: str = "", only_lemmas: bool = False,

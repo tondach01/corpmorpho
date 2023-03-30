@@ -1,8 +1,6 @@
 """This file contains tools for handling queries on corpora."""
 import morph_database as md
 from typing import Dict, List, Set, Tuple
-import pandas as pd
-import numpy as np
 
 
 class FreqTreeNode:
@@ -68,46 +66,6 @@ def uppercase_format(segmentation: str):
         else:
             formatted += clean[i]
     return formatted
-
-
-def lemmas(corpus: str):
-    """Generates all lemmas from given corpus."""
-    for word in corpus_generator(corpus, lemmas=True):
-        yield word
-
-
-def corpus_generator(corpus: str, lemmas: bool):
-    """Generates all desired features (words/lemmas) from given corpus."""
-    c = open(corpus, encoding="utf-8")
-    line = c.readline()
-    line = line.strip()
-    while line:
-        if len(line.split("\t")) == 3:
-            yield line.split("\t")[1 if lemmas else 0]
-        line = c.readline()
-        line = line.strip()
-    c.close()
-
-
-def words(corpus: str):
-    """Generates all words from given corpus."""
-    for word in corpus_generator(corpus, lemmas=False):
-        yield word
-
-
-def words_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame:
-    """Converts all words from given corpus to dataframe."""
-    frame = pd.DataFrame(data={"word": [x for x in words(corpus)], "lemma": [y for y in lemmas(corpus)]})
-    frame["paradigm"] = frame.lemma.apply(lambda x: morph_db.vocab.get(x, ""))
-    frame["count"] = np.ones(len(frame))
-    return frame
-
-
-def lemmas_to_dataframe(corpus: str, morph_db: md.MorphDatabase) -> pd.DataFrame:
-    frame = pd.DataFrame([x for x in lemmas(corpus)], columns=["lemma"])
-    frame["paradigm"] = frame.lemma.apply(lambda x: morph_db.vocab.get(x, ""))
-    frame["count"] = np.ones(len(frame))
-    return frame
 
 
 def clean_freqlist(freq_list: str) -> None:
@@ -176,27 +134,6 @@ def spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> flo
     return diff  # / (1 if len(paradigm) == 0 else len(paradigm))
 
 
-def spread_scores(segments: List[str], freq_list: str, morph_db: md.MorphDatabase, only_lemmas: bool = False) -> Dict[str, float]:
-    """Computes paradigm scores for given word based on its forms spread."""
-    scores = dict()
-    n_most_common = dict()
-    normed = dict()
-    for prefix, word_suffixes in get_suffixes(segments, freq_list).items():
-        suffix = "".join(segments)[len(prefix):]
-        n_best = n_best_paradigms(set(word_suffixes.keys()), morph_db, suffix, only_lemmas=only_lemmas)
-        for (common, paradigm) in n_best:
-            if n_most_common.get(paradigm, (0, ""))[0] < common:
-                if prefix not in normed.keys():
-                    normed[prefix] = normalize_spread(word_suffixes)
-                n_most_common[paradigm] = (common, prefix)
-    for paradigm, (common, prefix) in n_most_common.items():
-        scores[paradigm] = spread_difference(
-            normalize_spread(morph_db.paradigms[paradigm].get("spread", dict())),
-            normed[prefix]
-        ) / common
-    return scores
-
-
 def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphDatabase, only_lemmas: bool = False) -> Dict[str, float]:
     """Computes paradigm scores for given word based on its forms spread."""
     scores = dict()
@@ -253,12 +190,6 @@ def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, suffix
     return result
 
 
-def freq_to_df(freq_list: str) -> pd.DataFrame:
-    """Transforms frequency list with segmentations to dataframe."""
-    df = pd.read_table(freq_list, names=["Segmented", "Word", "Frequency"])
-    return df
-
-
 def segment_freq_list(freq_list: str, seg_method, suffix: str) -> None:
     """Adds info about segmentation to frequency list and stores it."""
     outfile = open(f"{freq_list}.{suffix}", "w", encoding="utf-8")
@@ -268,26 +199,7 @@ def segment_freq_list(freq_list: str, seg_method, suffix: str) -> None:
     outfile.close()
 
 
-def get_suffixes(word: List[str], freq_list: str) -> Dict[str, Dict[str, float]]:
-    """Lists through alphabetically sorted segmented frequency list and finds all words with prefixes
-    obtained with segmentation method matching with some prefix of segmented word."""
-    suffixes = {pref: dict() for pref in ["".join(word[:i + 1]) for i in range(len(word))]}
-    fl = open(freq_list, encoding="utf-8")
-    for line in fl:
-        values = line.strip().split()
-        if values[1][0] > word[0][0]:
-            break
-        if not line.startswith(word[0]):
-            continue
-        segments = values[0].strip("¦=▁").split("=")
-        for segment in ["".join(segments[:i + 1]) for i in range(len(segments))]:
-            if segment in suffixes.keys():
-                suffixes[segment][values[1][len(segment):]] = float(values[2].strip())
-    fl.close()
-    return suffixes
-
-
-def print_scores(scores: Dict[str, int]) -> None:
+def print_scores(scores: Dict[str, float]) -> None:
     """Prints paradigms in descending order (by their frequency scores)"""
     # TODO enhance
     for paradigm in sorted(scores, key=(lambda x: scores[x]), reverse=True):

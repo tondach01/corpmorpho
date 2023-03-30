@@ -2,16 +2,7 @@
 import os
 import db_stats as dbs
 import morph_database as md
-from typing import Dict, List, TextIO, Tuple
-
-
-def guess_paradigm_from_corpus(segments: List[str], freq_list: str, morph_db: md.MorphDatabase,
-                               only_lemmas: bool = False) -> List[Tuple[float, str]]:
-    """Guesses paradigm of given word based on occurrences of similar words in given corpus and their spread.
-    Returns sorted list of tuples (paradigm, diff (lower the better))."""
-    result = [(diff, par) for par, diff in dbs.spread_scores(segments, freq_list, morph_db, only_lemmas).items()]
-    result.sort()
-    return result
+from typing import List, TextIO, Tuple
 
 
 def tree_guess_paradigm_from_corpus(segments: str, tree: dbs.FreqTreeNode, morph_db: md.MorphDatabase,
@@ -23,11 +14,11 @@ def tree_guess_paradigm_from_corpus(segments: str, tree: dbs.FreqTreeNode, morph
     return result
 
 
-def guess_paradigm(segments: List[str], morph_db, frame, only_lemmas: bool = False) -> Dict[str, int]:
+def guess_paradigm(segments: str, tree: dbs.FreqTreeNode, morph_db: md.MorphDatabase, only_lemmas: bool = False):
     """Guesses the probabilities of paradigms for given word and its sub-word segmentation,
     bigger matched suffixes are prioritized. Note: very slow for non-lemmatized word"""
     # TODO update
-    pass
+    return tree_guess_paradigm_from_corpus(segments, tree, morph_db, only_lemmas)
 
 
 def get_segment_method(seg_tool: str):
@@ -65,17 +56,20 @@ def get_segment_method(seg_tool: str):
 
 
 def main(source: TextIO, lemma: bool = False, seg_tool: str = ""):
-    morph_db = md.MorphDatabase(f"data{os.sep}current.dic", f"data{os.sep}current.par")
-    corpus = f"desam{os.sep}desam"
-    frame = dbs.lemmas_to_dataframe(corpus, morph_db)
+    fl = "data/cstenten17_mj2.freqlist.cleaned.sorted_alpha"
+    morph_db = md.MorphDatabase(f"data{os.sep}current.dic", f"data{os.sep}current.par",
+                                freq_list=f"{fl}.filtered",
+                                only_formal=True)
     segment = get_segment_method(seg_tool)
-    word = source.readline()
-    word = word.strip()
-    while word:
-        scores = guess_paradigm(segment(word), morph_db, frame, lemma)
-        dbs.print_scores(scores)
-        word = source.readline()
-        word = word.strip()
+    fl = f"data{os.sep}cstenten17_mj2.freqlist.cleaned.sorted_alpha.baseline"
+    if not os.path.exists(fl):
+        print(fl, ": file not found")
+        return
+    node = dbs.FreqTreeNode().feed(fl)
+    for word in source:
+        segments = dbs.uppercase_format("".join(segment(word.strip())))
+        scores = guess_paradigm(segments, node, morph_db, lemma)
+        dbs.print_scores({par: diff for (diff, par) in scores})
 
 
 if __name__ == "__main__":
