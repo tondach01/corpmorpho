@@ -197,6 +197,34 @@ def spread_scores(segments: List[str], freq_list: str, morph_db: md.MorphDatabas
     return scores
 
 
+def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphDatabase, only_lemmas: bool = False) -> Dict[str, float]:
+    """Computes paradigm scores for given word based on its forms spread."""
+    scores = dict()
+    n_most_common = dict()
+    normed = dict()
+    prefix_frequencies = dict()
+    for i in range(len(segments)):
+        if segments[i].islower():
+            continue
+        prefix = segments[:i].lower()
+        prefix_frequencies[prefix] = tree.suffixes(prefix)
+    prefix_frequencies[segments.lower()] = tree.suffixes(segments.lower())
+    for prefix, word_suffixes in prefix_frequencies.items():
+        suffix = segments[len(prefix):].lower()
+        n_best = n_best_paradigms(set(word_suffixes.keys()), morph_db, suffix, only_lemmas=only_lemmas)
+        for (common, paradigm) in n_best:
+            if n_most_common.get(paradigm, (0, ""))[0] < common:
+                if prefix not in normed.keys():
+                    normed[prefix] = normalize_spread(word_suffixes)
+                n_most_common[paradigm] = (common, prefix)
+    for paradigm, (common, prefix) in n_most_common.items():
+        scores[paradigm] = spread_difference(
+            normalize_spread(morph_db.paradigms[paradigm].get("spread", dict())),
+            normed[prefix]
+        ) / common
+    return scores
+
+
 def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, suffix: str, n: int = 5,
                      only_lemmas: bool = False) -> List[Tuple[int, str]]:
     """Chooses n most suitable paradigms for given suffixes based on size of their intersection. Can return more than
