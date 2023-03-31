@@ -5,3 +5,4 @@ temp/
 unit_testing.py
 data/*.freqlist*
 data/*.csv
+old/

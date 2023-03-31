@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from typing import Tuple, List, Dict, Any
 from os import sep, listdir
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 
 def evaluate(log_file: str, top_n: int = 5) -> Tuple[List[int], int, int]:
@@ -88,5 +88,5 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    sentencepiece_plot(4)
+    main()
+    # sentencepiece_plot(4)
