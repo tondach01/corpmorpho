@@ -28,7 +28,7 @@ def segmented_tree_guess(freq_list: str, morph_db: md.MorphDatabase, segmenter: 
     with open(test_vocab, encoding="utf-8") as test:
         for line in test:
             print(line.strip(), file=log_file)
-            segments = dbs.uppercase_format("".join(segment(line.strip().split(":")[0])).lower())
+            segments = dbs.uppercase_format("=".join(segment(line.strip().split(":")[0])).lower())
             if segments[0] != start_letter:
                 start_letter = segments[0]
                 node = dbs.FreqTreeNode().feed(freq_list, start_letter)
