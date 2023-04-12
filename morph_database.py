@@ -12,11 +12,21 @@ class MorphDatabase:
     attributes vocab (dictionary lemma:paradigm) and paradigms (paradigm:suffixes and tags)."""
 
     def __init__(self, dic_file: str, par_file: str, freq_list: str = "", only_formal: bool = False):
-        self.vocab = vocabulary(dic_file)
+        self.vocab = dict()
         self.paradigms = paradigm_db(par_file, only_formal)
         self.paradigm_suffixes()
+        if dic_file:
+            self.vocab = vocabulary(dic_file)
         if freq_list:
             self.form_spread(freq_list)
+
+    def productive_paradigms(self) -> DB_PARADIGMS:
+        new_par = dict()
+        for word, paradigm in self.vocab.items():
+            if paradigm in new_par.keys() or word.split("_")[0] == paradigm.split("_")[0]:
+                continue
+            new_par[paradigm] = self.paradigms[paradigm]
+        return new_par
 
     def lemma_forms(self, lemma: str, paradigm: str) -> Set[str]:
         """Returns set of all forms for given lemma and paradigm."""
@@ -49,6 +59,8 @@ class MorphDatabase:
             for line in fl:
                 values = line.strip().split()
                 paradigm, word = values[0], values[1]
+                if paradigm not in self.paradigms.keys():
+                    continue
                 self.paradigms[paradigm]["spread"][word[len(paradigm) -
                                                         len(self.paradigms[paradigm]["<suffix>"]):]] = float(values[2])
 
