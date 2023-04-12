@@ -21,7 +21,7 @@ def segmented_tree_guess(freq_list: str, morph_db: md.MorphDatabase, segmenter: 
     if only_lemmas:
         test_vocab = f"data{sep}current.dic.cleaned.utf8.sorted"
     else:
-        test_vocab = f"data{sep}current.dic.cleaned.utf8.sorted.forms"
+        test_vocab = f"data{sep}current.dic.cleaned.utf8.sorted.forms.filtered"
     segment = g.get_segment_method(segmenter)
     start_letter = "a"
     node = dbs.FreqTreeNode().feed(freq_list, "a")
