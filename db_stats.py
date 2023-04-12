@@ -208,6 +208,17 @@ def segment_freq_list(freq_list: str, seg_method, suffix: str) -> None:
     outfile.close()
 
 
+def test_forms(file: str = "data/current.dic.cleaned.utf8.sorted.forms", ratio: int = 10) -> None:
+    out = open(file + ".filtered", "w", encoding="utf-8")
+    with open(file, encoding="utf-8") as f:
+        i = 0
+        for line in f:
+            if i % ratio == 0:
+                out.write(line)
+            i += 1
+    out.close()
+
+
 def print_scores(scores: Dict[str, float]) -> None:
     """Prints paradigms in descending order (by their frequency scores)"""
     # TODO enhance
