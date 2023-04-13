@@ -27,6 +27,8 @@ sort_dic_file: clean_dic_file
 dic_file_all_forms:
 	echo "import morph_database as md; md.MorphDatabase('data/current.dic', 'data/current.par').dic_file_all_forms('data/current.dic.cleaned.utf8.sorted'); exit()" | python3
 	sort -f --output=data/current.dic.cleaned.utf8.sorted.forms data/current.dic.cleaned.utf8.sorted.forms
+	echo "import db_stats as dbs; dbs.test_forms(); exit()" | python3
+	rm data/current.dic.cleaned.utf8.sorted.forms
 
 substitus_fwl:
 	cat desam/prevert_desam | java -jar substitus/substitus-20191210-thesis.jar create-frequency-list > substitus/desam.fwl
@@ -41,6 +43,12 @@ substitus_tok:
 
 substitus_segment_cstenten:
 	cut -f1 data/cstenten17_mj2.freqlist.cleaned.sorted_alpha | java -jar substitus/substitus-20191210-thesis.jar segmentize-words --frequency-list substitus/desam.lfwl --output-format binary --frequency-list-limit 22M | tr " " "=" | paste - data/cstenten17_mj2.freqlist.cleaned.sorted_alpha > data/cstenten17_mj2.freqlist.cleaned.sorted_alpha.substitus
+
+substitus_segment_test_lemmas:
+	cut -f1 -d: data/current.dic.cleaned.utf8.sorted | java -jar substitus/substitus-20191210-thesis.jar segmentize-words --frequency-list substitus/desam.lfwl --output-format binary --frequency-list-limit 22M | tr " " "=" | paste - data/current.dic.cleaned.utf8.sorted > data/current.dic.cleaned.utf8.sorted.substitus
+
+substitus_segment_test_forms:
+	cut -f1 -d: data/current.dic.cleaned.utf8.sorted.forms.filtered | java -jar substitus/substitus-20191210-thesis.jar segmentize-words --frequency-list substitus/desam.lfwl --output-format binary --frequency-list-limit 22M | tr " " "=" | paste - data/current.dic.cleaned.utf8.sorted.forms.filtered > data/current.dic.cleaned.utf8.sorted.forms.filtered.substitus
 
 clean:
 	rm -rf data/cstenten17_mj2.freqlist.cleaned*

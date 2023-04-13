@@ -13,7 +13,7 @@ def evaluate(log_file: str, top_n: int = 5) -> Tuple[List[int], int, int]:
         line = log.readline()
         while line:
             entries += 1
-            paradigm = line.strip().split(":")[1]
+            paradigm = line.strip().split(":")[-1]
             guesses = log.readline().strip().split(", ")
             if "" in guesses:
                 guesses.remove("")
