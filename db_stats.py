@@ -164,10 +164,11 @@ def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphData
                     normed[prefix] = normalize_spread(word_suffixes)
                 n_most_common[paradigm] = (common, prefix)
     for paradigm, (common, prefix) in n_most_common.items():
-        scores[paradigm] = spread_difference(
+        # penalize lower-form paradigms
+        scores[paradigm] = common - spread_difference(
             normalize_spread(morph_db.paradigms[paradigm].get("spread", dict())),
             normed[prefix]
-        ) / common
+        )
     return scores
 
 
@@ -182,12 +183,8 @@ def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, suffix
             continue
         if only_lemmas and suffix != data["<suffix>"].split("_")[0]:
             continue
-        # penalize single-form paradigms
-        # rel_common = (len(word_suffixes.intersection(par_affixes)) + len(par_affixes)) / (len(par_affixes) + 1)
         common = len(word_suffixes.intersection(par_affixes))
         i_sizes.append((common, paradigm))
-        # if rel_common > threshold:
-        #     i_sizes.append((rel_common, paradigm))
     nth_score = 1
     result = []
     for i, (score, paradigm) in enumerate(sorted(i_sizes, reverse=True)):

@@ -8,9 +8,9 @@ from typing import List, TextIO, Tuple
 def tree_guess_paradigm_from_corpus(segments: str, tree: dbs.FreqTreeNode, morph_db: md.MorphDatabase,
                                     only_lemmas: bool = False) -> List[Tuple[float, str]]:
     """Guesses paradigm of given word based on occurrences of similar words in given corpus and their spread.
-    Returns sorted list of tuples (paradigm, diff (lower the better))."""
-    result = [(diff, par) for par, diff in dbs.tree_spread_scores(segments, tree, morph_db, only_lemmas).items()]
-    result.sort()
+    Returns sorted list of tuples (paradigm, score (greater the better))."""
+    result = [(score, par) for par, score in dbs.tree_spread_scores(segments, tree, morph_db, only_lemmas).items()]
+    result.sort(reverse=True)
     return result
 
 
