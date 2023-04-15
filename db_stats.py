@@ -208,7 +208,7 @@ def segment_freq_list(freq_list: str, seg_method, suffix: str) -> None:
     outfile.close()
 
 
-def test_forms(file: str = "data/current.dic.cleaned.utf8.sorted.forms", ratio: int = 10) -> None:
+def test_forms(file: str = "data/current.dic.cleaned.utf8.sorted.forms", ratio: int = 50) -> None:
     out = open(file + ".filtered", "w", encoding="utf-8")
     with open(file, encoding="utf-8") as f:
         i = 0
