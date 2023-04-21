@@ -28,6 +28,19 @@ class MorphDatabase:
             new_par[paradigm] = self.paradigms[paradigm]
         return new_par
 
+    def form_present(self, word: str) -> bool:
+        for paradigm, data in self.paradigms.items():
+            root = paradigm[:len(paradigm) - len(data["<suffix>"])].lower()
+            if not word.startswith(root):
+                continue
+            for suffix in data["affixes"].keys:
+                if word == (root + suffix):
+                    return True
+        for lemma, paradigm in self.vocab.items():
+            if word in self.lemma_forms(lemma.lower(), paradigm):
+                return True
+        return False
+
     def lemma_forms(self, lemma: str, paradigm: str) -> Set[str]:
         """Returns set of all forms for given lemma and paradigm."""
         forms = set()

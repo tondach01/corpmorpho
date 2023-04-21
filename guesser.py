@@ -55,21 +55,24 @@ def get_segment_method(seg_tool: str):
     return baseline
 
 
-def main(source: TextIO, lemma: bool = False, seg_tool: str = ""):
+def main(source: TextIO, only_lemmas: bool = False, seg_tool: str = ""):
     fl = "data/cstenten17_mj2.freqlist.cleaned.sorted_alpha"
     morph_db = md.MorphDatabase(f"data{os.sep}current.dic", f"data{os.sep}current.par",
-                                freq_list=f"{fl}.filtered",
-                                only_formal=True)
+                                freq_list=f"{fl}.filtered")
     segment = get_segment_method(seg_tool)
-    fl = f"data{os.sep}cstenten17_mj2.freqlist.cleaned.sorted_alpha.baseline"
+    fl = f"data{os.sep}cstenten17_mj2.freqlist.cleaned.sorted_alpha.{seg_tool if seg_tool else 'baseline'}"
     if not os.path.exists(fl):
         print(fl, ": file not found")
         return
-    node = dbs.FreqTreeNode().feed(fl)
-    for word in source:
-        segments = dbs.uppercase_format("".join(segment(word.strip())))
-        scores = guess_paradigm(segments, node, morph_db, lemma)
-        dbs.print_scores({par: diff for (diff, par) in scores})
+    start_letter = "a"
+    node = dbs.FreqTreeNode().feed(fl, "a")
+    for line in source:
+        segments = dbs.uppercase_format("=".join(segment(line.strip().lower())))
+        if segments[0] != start_letter:
+            start_letter = segments[0]
+            node = dbs.FreqTreeNode().feed(fl, start_letter)
+        scores = tree_guess_paradigm_from_corpus(segments, node, morph_db, only_lemmas)
+        dbs.print_scores(line.strip(), {par: score for score, par in scores[:min(5, len(scores))]})
 
 
 if __name__ == "__main__":
@@ -79,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--lemma", action="store_true", help="word is given in its base form", default=False)
     parser.add_argument("-f", "--infile", help="file from which take the words for guessing (one per line), "
                                                "otherwise stdin is used")
-    parser.add_argument("-s", "--use-segmenter", choices=["sentencepiece", "morfessor"], default="",
+    parser.add_argument("-s", "--use-segmenter", default="baseline",
                         help="use segmentation for words (if not specified, not using any)")
     args = parser.parse_args()
 
