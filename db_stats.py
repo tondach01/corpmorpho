@@ -219,6 +219,6 @@ def test_forms(file: str = "data/current.dic.cleaned.utf8.sorted.forms", ratio: 
 def print_scores(word: str, scores: Dict[str, float]) -> None:
     """Prints paradigms in descending order (by their frequency scores)"""
     print(word + ":", end="")
-    for paradigm in sorted(scores, key=(lambda x: scores[x]), reverse=True):
-        print(f" {paradigm} ({scores[paradigm]})", end="")
+    for paradigm, score in scores.items():
+        print(f" {paradigm} ({score})", end="")
     print()
