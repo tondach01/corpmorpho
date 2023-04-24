@@ -33,7 +33,7 @@ class MorphDatabase:
             root = paradigm[:len(paradigm) - len(data["<suffix>"])].lower()
             if not word.startswith(root):
                 continue
-            for suffix in data["affixes"].keys:
+            for suffix in data["affixes"].keys():
                 if word == (root + suffix):
                     return True
         for lemma, paradigm in self.vocab.items():
