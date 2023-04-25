@@ -48,10 +48,14 @@ class MorphDatabase:
 
     def paradigm_suffixes(self) -> None:
         """Assigns suffix (part of word to be cut when creating other forms) to each paradigm in database."""
-        for paradigm, suffixes in self.paradigms.items():
-            lemma = paradigm.split("_", 1)[0]
+        for paradigm, data in self.paradigms.items():
+            lemma = paradigm.split("_", 1)[0].rstrip("1234567890")
+            self.paradigms[paradigm]["<suffix>"] = ""
             # keys() iterates in insertion order
-            self.paradigms[paradigm]["<suffix>"] = paradigm[lemma.rfind(list(suffixes["affixes"].keys())[0]):]
+            for suffix in data["affixes"].keys():
+                if lemma.endswith(suffix):
+                    self.paradigms[paradigm]["<suffix>"] = paradigm[len(lemma) - len(suffix):]
+                    break
 
     def form_spread(self, freq_list: str) -> None:
         """Computes absolute spread of given forms in corpus characterized by its alphabetically sorted
