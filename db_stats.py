@@ -98,7 +98,7 @@ def filter_freqlist(freq_list: str, all_forms: str) -> None:
     form = forms.readline()
     with open(freq_list, encoding="utf-8") as fl:
         for line in fl:
-            if form is None:
+            if not form:
                 break
             print(line.strip())  # debug
             word = line.split()[0]
@@ -107,13 +107,13 @@ def filter_freqlist(freq_list: str, all_forms: str) -> None:
                 continue
             while str_gt(word, data[0]):
                 form = forms.readline()
-                if form is None:
+                if not form:
                     break
                 data = form.strip().split(":")
             while data[0] == word:
                 out.write(f"{data[2]}\t{data[1]}\t{line}")
                 form = forms.readline()
-                if form is None:
+                if not form:
                     break
                 data = form.strip().split(":")
     out.close()
