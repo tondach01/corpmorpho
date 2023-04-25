@@ -32,8 +32,13 @@ def segmented_tree_guess(freq_list: str, morph_db: md.MorphDatabase, segmenter: 
             if segments[0] != start_letter:
                 start_letter = segments[0]
                 node = dbs.FreqTreeNode().feed(freq_list, start_letter)
+            data = line.strip().split(":")
+            for form in morph_db.lemma_forms(data[-2], data[-1]):
+                morph_db.paradigms[data[-1]]["spread"][data[0][len(morph_db.word_root(data[-2], data[-1])):]] -= node[form]
             scores = g.tree_guess_paradigm_from_corpus(segments, node, morph_db, only_lemmas)
             print("\t" + ", ".join([par for _, par in scores]), file=log_file)
+            for form in morph_db.lemma_forms(data[-2], data[-1]):
+                morph_db.paradigms[data[-1]]["spread"][data[0][len(morph_db.word_root(data[-2], data[-1])):]] += node[form]
     if not debug:
         log_file.close()
 

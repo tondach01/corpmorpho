@@ -73,8 +73,14 @@ class MorphDatabase:
                 values = line.strip().split()
                 paradigm, lemma, word = values[0], values[1], values[2]
                 self.paradigms[paradigm]["spread"][word[len(lemma) -
-                                                        len(self.paradigms[paradigm]["<suffix>"].split["_"][0]):]] \
+                                                        len(self.paradigms[paradigm]["<suffix>"].split("_")[0]):]] \
                     += int(values[3])
+
+    def all_suffixes(self) -> Set[str]:
+        found = set()
+        for data in self.paradigms.values():
+            found |= data["affixes"].keys()
+        return found
 
     def dic_file_all_forms(self, dic_file: str) -> None:
         outfile = open(f"{dic_file}.forms", "w", encoding="utf-8")

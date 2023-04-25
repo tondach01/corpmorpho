@@ -107,10 +107,14 @@ def filter_freqlist(freq_list: str, all_forms: str) -> None:
                 continue
             while str_gt(word, data[0]):
                 form = forms.readline()
+                if form is None:
+                    break
                 data = form.strip().split(":")
             while data[0] == word:
                 out.write(f"{data[2]}\t{data[1]}\t{line}")
                 form = forms.readline()
+                if form is None:
+                    break
                 data = form.strip().split(":")
     out.close()
     forms.close()
@@ -171,11 +175,13 @@ def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphData
     n_most_common = dict()
     normed = dict()
     prefix_frequencies = dict()
+    all_suffixes = morph_db.all_suffixes()
     for i in range(len(segments)):
         if segments[i].islower():
             continue
         prefix = segments[:i].lower()
-        prefix_frequencies[prefix] = tree.suffixes(prefix)
+        if segments[len(prefix):].lower() in all_suffixes:
+            prefix_frequencies[prefix] = tree.suffixes(prefix)
     prefix_frequencies[segments.lower()] = tree.suffixes(segments.lower())
     for prefix, word_suffixes in prefix_frequencies.items():
         suffix = segments[len(prefix):].lower()
