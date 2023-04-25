@@ -81,16 +81,16 @@ class MorphDatabase:
                 print(f"{form}:{word}:{paradigm}", file=outfile)
         outfile.close()
 
-    def same_paradigms(self, this: str, other: str, criterion: str, threshold: int = -1, tags: bool = False) -> bool:
+    def same_paradigms(self, this: str, other: str, criterion: str, threshold: int = -1) -> bool:
         if this not in self.paradigms.keys() or other not in self.paradigms.keys():
             return False
-        if criterion == "full":
+        if criterion == "same_paradigms":
             return this == other
-        elif criterion == "same":
+        elif criterion == "same_affixes":
             return self.paradigms[this]["affixes"] == self.paradigms[other]["affixes"]
         elif criterion == "common_forms" and threshold != -1:
             return len(set(self.paradigms[this]["affixes"].keys()).intersection(self.paradigms[other]["affixes"].keys())) >= threshold
-        elif criterion == "common_tags" and tags:
+        elif criterion == "common_tags":
             this_tag = list(self.paradigms[this]["affixes"].values())[0][0]
             other_tag = list(self.paradigms[other]["affixes"].values())[0][0]
             return this_tag[1] == other_tag[1] and \
