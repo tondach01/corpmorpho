@@ -30,7 +30,6 @@ dic_file_all_forms:
 
 dic_file_test_forms: dic_file_all_forms
 	echo "import db_stats as dbs; dbs.test_forms(); exit()" | python3
-	rm data/current.dic.cleaned.utf8.sorted.forms
 
 substitus_fwl:
 	cat desam/prevert_desam | java -jar substitus/substitus-20191210-thesis.jar create-frequency-list > substitus/desam.fwl

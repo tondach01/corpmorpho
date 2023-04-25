@@ -20,14 +20,6 @@ class MorphDatabase:
         if freq_list:
             self.form_spread(freq_list)
 
-    def productive_paradigms(self) -> DB_PARADIGMS:
-        new_par = dict()
-        for (word, paradigm) in self.vocab:
-            if paradigm in new_par.keys() or word.split("_")[0] == paradigm.split("_")[0]:
-                continue
-            new_par[paradigm] = self.paradigms[paradigm]
-        return new_par
-
     def form_present(self, word: str) -> bool:
         for paradigm, data in self.paradigms.items():
             root = paradigm[:len(paradigm) - len(data["<suffix>"])].lower()
@@ -89,13 +81,22 @@ class MorphDatabase:
                 print(f"{form}:{word}:{paradigm}", file=outfile)
         outfile.close()
 
-    def same_paradigms(self) -> None:
-        for par, data in self.paradigms.items():
-            for other_par, other_data in self.paradigms.items():
-                if par <= other_par:
-                    continue
-                if data["affixes"] == other_data["affixes"]:
-                    print(f"{par} == {other_par}")
+    def same_paradigms(self, this: str, other: str, criterion: str, threshold: int = -1, tags: bool = False) -> bool:
+        if this not in self.paradigms.keys() or other not in self.paradigms.keys():
+            return False
+        if criterion == "full":
+            return this == other
+        elif criterion == "same":
+            return self.paradigms[this]["affixes"] == self.paradigms[other]["affixes"]
+        elif criterion == "common_forms" and threshold != -1:
+            return len(set(self.paradigms[this]["affixes"].keys()).intersection(self.paradigms[other]["affixes"].keys())) >= threshold
+        elif criterion == "common_tags" and tags:
+            this_tag = list(self.paradigms[this]["affixes"].values())[0][0]
+            other_tag = list(self.paradigms[other]["affixes"].values())[0][0]
+            return this_tag[1] == other_tag[1] and \
+                (True if this_tag[1] != "1" else ("g" in this_tag and "g" in other_tag
+                                                  and this_tag[this_tag.index("g") + 1]
+                                                  == other_tag[other_tag.index("g") + 1]))
 
 
 def paradigm_db(par_file: str, only_formal: bool = False) -> DB_PARADIGMS:
