@@ -4,7 +4,7 @@ from typing import Tuple, Dict, List, Set, Any
 AFFIXES = Dict[str, List[Tuple[str, List[str]]]]
 PAR_DATA = Dict[str, Any]
 DB_PARADIGMS = Dict[str, PAR_DATA]
-DB_VOCABULARY = Dict[str, str]
+DB_VOCABULARY = List[Tuple[str, str]]
 
 
 class MorphDatabase:
@@ -12,7 +12,7 @@ class MorphDatabase:
     attributes vocab (dictionary lemma:paradigm) and paradigms (paradigm:suffixes and tags)."""
 
     def __init__(self, dic_file: str, par_file: str, freq_list: str = "", only_formal: bool = False):
-        self.vocab = dict()
+        self.vocab = []
         self.paradigms = paradigm_db(par_file, only_formal)
         self.paradigm_suffixes()
         if dic_file:
@@ -22,7 +22,7 @@ class MorphDatabase:
 
     def productive_paradigms(self) -> DB_PARADIGMS:
         new_par = dict()
-        for word, paradigm in self.vocab.items():
+        for (word, paradigm) in self.vocab:
             if paradigm in new_par.keys() or word.split("_")[0] == paradigm.split("_")[0]:
                 continue
             new_par[paradigm] = self.paradigms[paradigm]
@@ -36,7 +36,7 @@ class MorphDatabase:
             for suffix in data["affixes"].keys():
                 if word == (root + suffix):
                     return True
-        for lemma, paradigm in self.vocab.items():
+        for (lemma, paradigm) in self.vocab:
             if word in self.lemma_forms(lemma.lower(), paradigm):
                 return True
         return False
@@ -84,7 +84,7 @@ class MorphDatabase:
 
     def dic_file_all_forms(self, dic_file: str) -> None:
         outfile = open(f"{dic_file}.forms", "w", encoding="utf-8")
-        for word, paradigm in self.vocab.items():
+        for word, paradigm in self.vocab:
             for form in self.lemma_forms(word, paradigm):
                 print(f"{form}:{word}:{paradigm}", file=outfile)
         outfile.close()
@@ -120,14 +120,14 @@ def paradigm_db(par_file: str, only_formal: bool = False) -> DB_PARADIGMS:
 
 def vocabulary(dic_file: str) -> DB_VOCABULARY:
     """Creates vocabulary from data in dictionary file"""
-    vocab = dict()
+    vocab = []
     d = open(dic_file, "r", encoding="windows-1250")
     for line in d:
         line = correct_encoding(line)
         if line.startswith(" ") or line.startswith("|") or not line.strip():
             continue
         lem_par = line.split("|")[0].split(":")
-        vocab[lem_par[0]] = lem_par[1].rstrip("!%\n")
+        vocab.append((lem_par[0], lem_par[1].rstrip("!%\n")))
     d.close()
     return vocab
 

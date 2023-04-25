@@ -135,7 +135,7 @@ def segment_dic_file(morph_db: md.MorphDatabase, seg_method, outfile: str, only_
     """Segments each word in vocabulary of morphological database with given method. If only_lemmas set
     to False, it first computes and includes all forms of given lemma. Result is saved to outfile."""
     with open(outfile, "w", encoding="utf-8") as out:
-        for lemma, paradigm in morph_db.vocab.items():
+        for (lemma, paradigm) in morph_db.vocab:
             segments = "=".join(seg_method(lemma)).replace("_", "").replace("¦", "").replace("𐋇", "")\
                 .replace("𐊣", "").replace("𐊼", "")
             print(f"{segments}:{lemma}:{paradigm}", file=out)
