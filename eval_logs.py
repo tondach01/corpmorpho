@@ -75,7 +75,10 @@ def md_check(log_file: str, crit: str, morph_db, threshold: int = 5) -> Tuple[in
             if "" in guesses:
                 guesses.remove("")
             guess_count += len(guesses)
-            if guesses and morph_db.same_paradigms(guesses[0], paradigm, crit, threshold=threshold):
+            if crit == "same_lemmas":
+                if guesses and morph_db.same_lemma(guesses[0], paradigm):
+                    correct += 1
+            elif guesses and morph_db.same_paradigms(guesses[0], paradigm, crit, threshold=threshold):
                 correct += 1
             line = log.readline()
     return correct, entries, guess_count
@@ -85,7 +88,8 @@ def main():
     from time import time
     import argparse
     parser = argparse.ArgumentParser(description="Evaluate logs in ./logs/ directory")
-    parser.add_argument("-c", "--criterion", choices=["same_paradigms", "same_affixes", "common_forms", "common_tags"],
+    parser.add_argument("-c", "--criterion", choices=["same_paradigms", "same_affixes", "common_forms", "common_tags",
+                                                      "same_lemma"],
                         help="how to evaluate", default="same_paradigms")
     parser.add_argument("-f", "--filter", help="only log names containing this string will be evaluated", default="")
     parser.add_argument("-t", "--threshold", type=int, help="threshold for common_forms", default=5)

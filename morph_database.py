@@ -89,7 +89,8 @@ class MorphDatabase:
         elif criterion == "same_affixes":
             return self.paradigms[this]["affixes"] == self.paradigms[other]["affixes"]
         elif criterion == "common_forms" and threshold != -1:
-            return len(set(self.paradigms[this]["affixes"].keys()).intersection(self.paradigms[other]["affixes"].keys())) >= threshold
+            return len(set(self.paradigms[this]["affixes"].keys())
+                       .intersection(self.paradigms[other]["affixes"].keys())) >= threshold
         elif criterion == "common_tags":
             this_tag = list(self.paradigms[this]["affixes"].values())[0][0]
             other_tag = list(self.paradigms[other]["affixes"].values())[0][0]
@@ -97,6 +98,20 @@ class MorphDatabase:
                 (True if this_tag[1] != "1" else ("g" in this_tag and "g" in other_tag
                                                   and this_tag[this_tag.index("g") + 1]
                                                   == other_tag[other_tag.index("g") + 1]))
+
+    def same_lemma(self, word: str, this: str, other: str) -> bool:
+        if this not in self.paradigms.keys() or other not in self.paradigms.keys():
+            return False
+        return self.lemmatize(word, this) == self.lemmatize(word, other)
+
+    def lemmatize(self, form: str, paradigm: str, prefix: str = "") -> str:
+        if prefix:
+            return prefix + self.paradigms[paradigm]["<suffix>"].split("_")[0]
+        longest_suffix = ""
+        for suffix in self.paradigms[paradigm]["affixes"].keys():
+            if form.endswith(suffix) and len(suffix) > len(longest_suffix):
+                longest_suffix = suffix
+        return form[:len(form) - len(longest_suffix)] + self.paradigms[paradigm]["<suffix>"].split("_")[0]
 
 
 def paradigm_db(par_file: str, only_formal: bool = False) -> DB_PARADIGMS:
