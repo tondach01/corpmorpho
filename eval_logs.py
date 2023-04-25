@@ -43,7 +43,7 @@ def classic_eval(fltr: str = "", top_n: int = 1, debug: bool = False) -> None:
         if fltr not in log_file:
             continue
         print(f"{log_file}:", file=outfile)
-        full_eval(f"logs{sep}{log_file}", top_n=top_n)
+        full_eval(f"logs{sep}{log_file}", top_n, outfile)
     if not debug:
         outfile.close()
 
@@ -57,7 +57,7 @@ def md_eval(crit: str, fltr: str = "", threshold: int = 5, debug: bool = False) 
     for log_file in listdir("logs"):
         if fltr not in log_file:
             continue
-        correct, entries, guess_count = md_check(log_file, crit, morph_db, threshold)
+        correct, entries, guess_count = md_check(f"logs/{log_file}", crit, morph_db, threshold)
         print(f"{log_file}: {correct}/{entries}, {round(guess_count/entries, 3)} guesses in average", file=outfile)
     if not debug:
         outfile.close()
@@ -90,7 +90,7 @@ def main():
     parser.add_argument("-f", "--filter", help="only log names containing this string will be evaluated", default="")
     parser.add_argument("-t", "--threshold", type=int, help="threshold for common_forms", default=5)
     parser.add_argument("-d", "--debug", action="store_true", help="print to standard output", default=False)
-    parser.add_argument("-n", "--top_n", type=int, help="evaluate n best guesses", default=1)
+    parser.add_argument("-n", "--top_n", type=int, help="evaluate n best guesses", default=5)
     args = parser.parse_args()
     start = time()
     if args.criterion == "same_paradigms":
