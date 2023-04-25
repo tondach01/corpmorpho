@@ -67,15 +67,14 @@ class MorphDatabase:
         for paradigm, data in self.paradigms.items():
             self.paradigms[paradigm]["spread"] = dict()
             for affix in data["affixes"].keys():
-                self.paradigms[paradigm]["spread"][affix] = 0.0
+                self.paradigms[paradigm]["spread"][affix] = 0
         with open(freq_list, encoding="utf-8") as fl:
             for line in fl:
                 values = line.strip().split()
-                paradigm, word = values[0], values[1]
-                if paradigm not in self.paradigms.keys():
-                    continue
-                self.paradigms[paradigm]["spread"][word[len(paradigm) -
-                                                        len(self.paradigms[paradigm]["<suffix>"]):]] = float(values[2])
+                paradigm, lemma, word = values[0], values[1], values[2]
+                self.paradigms[paradigm]["spread"][word[len(lemma) -
+                                                        len(self.paradigms[paradigm]["<suffix>"].split["_"][0]):]] \
+                    += int(values[3])
 
     def dic_file_all_forms(self, dic_file: str) -> None:
         outfile = open(f"{dic_file}.forms", "w", encoding="utf-8")

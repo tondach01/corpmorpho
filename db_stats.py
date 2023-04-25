@@ -91,18 +91,40 @@ def clean_freqlist(freq_list: str) -> None:
     cleaned.close()
 
 
-def filter_freqlist(freq_list: str, morph_db: md.MorphDatabase) -> None:
-    """Picks from alphabetically sorted frequency list only forms of paradigms in morphological database."""
+def filter_freqlist(freq_list: str, all_forms: str) -> None:
+    """Picks from alphabetically sorted frequency list only forms of words in morphological database."""
     out = open(f"{freq_list}.filtered", "w", encoding="utf-8")
+    forms = open(all_forms, encoding="utf-8")
+    form = forms.readline()
     with open(freq_list, encoding="utf-8") as fl:
         for line in fl:
+            if form is None:
+                break
             print(line.strip())  # debug
             word = line.split()[0]
-            for paradigm, data in morph_db.paradigms.items():
-                if word[0] != paradigm[0].lower() and data["<suffix>"] != paradigm:
-                    continue
-                if word in set(map(str.lower, morph_db.lemma_forms(paradigm, paradigm))):
-                    out.write(f"{paradigm}\t{line}")
+            data = form.strip().split(":")
+            if str_gt(data[0], word):
+                continue
+            while str_gt(word, data[0]):
+                form = forms.readline()
+                data = form.strip().split(":")
+            while data[0] == word:
+                out.write(f"{data[2]}\t{data[1]}\t{line}")
+                form = forms.readline()
+                data = form.strip().split(":")
+    out.close()
+    forms.close()
+
+
+def str_gt(this: str, other: str) -> bool:
+    if this == other:
+        return False
+    for i in range(min(len(this), len(other))):
+        if this[i] > other[i]:
+            return True
+        elif this[i] < other[i]:
+            return False
+    return len(this) > len(other)
 
 
 def segment_dic_file(morph_db: md.MorphDatabase, seg_method, outfile: str, only_lemmas: bool = True) -> None:

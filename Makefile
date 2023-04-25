@@ -10,7 +10,7 @@ sort_alpha: clean_freq_list
 	sort -k1 data/cstenten17_mj2.freqlist.cleaned > data/cstenten17_mj2.freqlist.cleaned.sorted_alpha
 
 filter_for_morph_db:
-	echo "import db_stats as dbs; import morph_database as md; dbs.filter_freqlist('data/cstenten17_mj2.freqlist.cleaned.sorted_alpha', md.MorphDatabase('data/current.dic', 'data/current.par')); exit()" | python3
+	echo "import db_stats as dbs; dbs.filter_freqlist('data/cstenten17_mj2.freqlist.cleaned.sorted_alpha', 'data/current.dic.cleaned.utf8.sorted.forms'); exit()" | python3
 
 hftok_learn:
 	python3 hftok/hftoks.py learn hftok/desam.pretok hftok/desam.vocab
@@ -27,6 +27,8 @@ sort_dic_file: clean_dic_file
 dic_file_all_forms:
 	echo "import morph_database as md; md.MorphDatabase('data/current.dic', 'data/current.par').dic_file_all_forms('data/current.dic.cleaned.utf8.sorted'); exit()" | python3
 	sort -f --output=data/current.dic.cleaned.utf8.sorted.forms data/current.dic.cleaned.utf8.sorted.forms
+
+dic_file_test_forms: dic_file_all_forms
 	echo "import db_stats as dbs; dbs.test_forms(); exit()" | python3
 	rm data/current.dic.cleaned.utf8.sorted.forms
 
