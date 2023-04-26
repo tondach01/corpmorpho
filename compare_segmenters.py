@@ -65,7 +65,7 @@ def substitus_segmented_tree_guess(morph_db: md.MorphDatabase, only_lemmas: bool
             if segments[0] != start_letter:
                 start_letter = segments[0]
                 node = dbs.FreqTreeNode().feed(freq_list, start_letter)
-            data = line.strip().split(":")
+            data = data[1].strip().split(":")
             for form in morph_db.lemma_forms(data[-2], data[-1]):
                 morph_db.paradigms[data[-1]]["spread"][
                     data[0][len(morph_db.word_root(data[-2], data[-1])):]] -= node[form]
