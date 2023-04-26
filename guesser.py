@@ -5,20 +5,20 @@ import morph_database as md
 from typing import List, TextIO, Tuple
 
 
-def tree_guess_paradigm_from_corpus(segments: str, tree: dbs.FreqTreeNode, morph_db: md.MorphDatabase,
+def tree_guess_paradigm_from_corpus(segments: str, tree: dbs.FreqTreeNode, morph_db: md.MorphDatabase, scoring,
                                     only_lemmas: bool = False) -> List[Tuple[float, str]]:
     """Guesses paradigm of given word based on occurrences of similar words in given corpus and their spread.
     Returns sorted list of tuples (paradigm, score (greater the better))."""
-    result = [(score, par) for par, score in dbs.tree_spread_scores(segments, tree, morph_db, only_lemmas).items()]
+    result = [(score, par) for par, score in dbs.tree_spread_scores(
+        segments,
+        tree,
+        morph_db,
+        scoring=dbs.scoring_comm_spread,
+        only_lemmas=only_lemmas
+    ).items()
+              ]
     result.sort(reverse=True)
     return result
-
-
-def guess_paradigm(segments: str, tree: dbs.FreqTreeNode, morph_db: md.MorphDatabase, only_lemmas: bool = False):
-    """Guesses the probabilities of paradigms for given word and its sub-word segmentation,
-    bigger matched suffixes are prioritized. Note: very slow for non-lemmatized word"""
-    # TODO update
-    return tree_guess_paradigm_from_corpus(segments, tree, morph_db, only_lemmas)
 
 
 def get_segment_method(seg_tool: str):

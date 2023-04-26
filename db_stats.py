@@ -168,8 +168,8 @@ def spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> flo
     return diff  # / (1 if len(paradigm) == 0 else len(paradigm))
 
 
-def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphDatabase, only_lemmas: bool = False) \
-        -> Dict[str, float]:
+def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphDatabase, scoring,
+                       only_lemmas: bool = False) -> Dict[str, float]:
     """Computes paradigm scores for given word based on its forms spread."""
     scores = dict()
     n_most_common = dict()
@@ -192,12 +192,16 @@ def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphData
                     normed[prefix] = normalize_spread(word_suffixes)
                 n_most_common[paradigm] = (common, prefix)
     for paradigm, (common, prefix) in n_most_common.items():
-        # penalize lower-form paradigms
-        scores[paradigm] = common - spread_difference(
-            normalize_spread(morph_db.paradigms[paradigm].get("spread", dict())),
-            normed[prefix]
-        )
+        scores[paradigm] = scoring(common,
+                                   normed[prefix],
+                                   normalize_spread(morph_db.paradigms[paradigm].get("spread", dict()))
+                                   )
     return scores
+
+
+def scoring_comm_spread(common_forms: int, guess_normed: Dict[str, float], par_normed: Dict[str, float]):
+    # penalize lower-form paradigms
+    return common_forms - spread_difference(par_normed, guess_normed)
 
 
 def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, suffix: str, n: int = 5,
