@@ -43,8 +43,12 @@ class MorphDatabase:
 
     def word_root(self, lemma: str, paradigm: str) -> str:
         """Returns the morphological root (resp. prefixes+root) for given lemma"""
+        # weird irregularity in current.dic
+        if lemma == "své" and paradigm == "svoje":
+            return "sv"
+
         common_suffix = self.paradigms[paradigm]["<suffix>"].split("_")[0]
-        return lemma if not common_suffix else lemma[:-len(common_suffix)]
+        return lemma[:len(lemma) - len(common_suffix)]
 
     def paradigm_suffixes(self) -> None:
         """Assigns suffix (part of word to be cut when creating other forms) to each paradigm in database."""
