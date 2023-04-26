@@ -13,7 +13,7 @@ def tree_guess_paradigm_from_corpus(segments: str, tree: dbs.FreqTreeNode, morph
         segments,
         tree,
         morph_db,
-        scoring=dbs.scoring_comm_spread,
+        scoring=scoring,
         only_lemmas=only_lemmas
     ).items()
               ]

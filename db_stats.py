@@ -204,6 +204,19 @@ def scoring_comm_spread(common_forms: int, guess_normed: Dict[str, float], par_n
     return common_forms - spread_difference(par_normed, guess_normed)
 
 
+def scoring_comm_square_spread(common_forms: int, guess_normed: Dict[str, float], par_normed: Dict[str, float]):
+    # penalize lower-form paradigms
+    return common_forms - square_spread_difference(par_normed, guess_normed)
+
+
+def square_spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> float:
+    from math import pow
+    diff = 0
+    for suf, freq in paradigm.items():
+        diff += pow(abs(freq - word.get(suf, 0.0)), 2)
+    return diff
+
+
 def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, suffix: str, n: int = 5,
                      only_lemmas: bool = False) -> List[Tuple[int, str]]:
     """Chooses n most suitable paradigms for given suffixes based on size of their intersection. Can return more than
