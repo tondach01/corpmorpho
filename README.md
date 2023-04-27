@@ -17,7 +17,7 @@
     - `sentencepiece_{unigram, bpe}_{vocabulary size}`
     - `morfessor_{max epochs}`
     - `hft`
-    - `baseline` for no segmentator (all possible segmentations are taken into account)
+    - `character` for no segmentator (all possible segmentations are taken into account)
   - in Python terminal, run:
     ```
     import db_stats

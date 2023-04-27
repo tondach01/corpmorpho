@@ -7,7 +7,7 @@ import re
 
 DIC_FILE = "data/current.dic"
 PAR_FILE = "data/current.par"
-SEG_TOOL = "baseline"
+SEG_TOOL = "character"
 FREQ_LIST = f"data/cstenten17_mj2.freqlist.cleaned.sorted_alpha.{SEG_TOOL}"
 FREQ_LIST_FILTERED = "data/cstenten17_mj2.freqlist.cleaned.sorted_alpha.filtered"
 
