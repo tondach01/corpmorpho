@@ -7,7 +7,7 @@ import db_stats as dbs
 from os import sep, path, mkdir
 
 
-def baseline_guess(corpus: str, morph_db: md.MorphDatabase) -> None:
+def character_guess(corpus: str, morph_db: md.MorphDatabase) -> None:
     """Tries to guess paradigm for each entry in test_vocab without explicit segmentation."""
     return segmented_tree_guess(corpus, morph_db)
 
@@ -93,7 +93,7 @@ def main():
     start = time()
     morph_db = md.MorphDatabase(f"data{sep}current.dic", f"data{sep}current.par",
                                 freq_list=f"data{sep}cstenten17_mj2.freqlist.cleaned.sorted_alpha.filtered")
-    fl = f"data{sep}cstenten17_mj2.freqlist.cleaned.sorted_alpha.{args.segmenter if args.segmenter else 'baseline'}"
+    fl = f"data{sep}cstenten17_mj2.freqlist.cleaned.sorted_alpha.{args.segmenter if args.segmenter else 'character'}"
     if not path.exists(fl):
         print(fl, " file not found")
         return
