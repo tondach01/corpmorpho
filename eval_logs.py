@@ -71,12 +71,13 @@ def md_check(log_file: str, crit: str, morph_db, threshold: int = 5) -> Tuple[in
         while line:
             entries += 1
             paradigm = line.strip().split(":")[-1]
+            form = line.strip().split(":")[0]
             guesses = log.readline().strip().split(", ")
             if "" in guesses:
                 guesses.remove("")
             guess_count += len(guesses)
             if crit == "same_lemmas":
-                if guesses and morph_db.same_lemma(guesses[0], paradigm):
+                if guesses and morph_db.same_lemma(form, guesses[0], paradigm):
                     correct += 1
             elif guesses and morph_db.same_paradigms(guesses[0], paradigm, crit, threshold=threshold):
                 correct += 1

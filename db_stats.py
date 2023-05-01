@@ -199,11 +199,6 @@ def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphData
     return scores
 
 
-def scoring_comm_spread(common_forms: int, guess_normed: Dict[str, float], par_normed: Dict[str, float]):
-    # penalize lower-form paradigms
-    return common_forms - spread_difference(par_normed, guess_normed)
-
-
 def scoring_comm_square_spread(common_forms: int, guess_normed: Dict[str, float], par_normed: Dict[str, float]):
     # penalize lower-form paradigms
     return common_forms - square_spread_difference(par_normed, guess_normed)
