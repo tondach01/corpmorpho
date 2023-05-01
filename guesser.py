@@ -55,24 +55,41 @@ def get_segment_method(seg_tool: str):
     return character
 
 
-def main(source: TextIO, only_lemmas: bool = False, seg_tool: str = ""):
+def main(source: TextIO, only_lemmas: bool = False, seg_tool: str = "character", debug: bool = False):
+    from sys import stderr
     fl = "data/cstenten17_mj2.freqlist.cleaned.sorted_alpha"
+    if debug:
+        print("Building morphological database...")
     morph_db = md.MorphDatabase(f"data{os.sep}current.dic", f"data{os.sep}current.par",
                                 freq_list=f"{fl}.filtered")
+    if debug:
+        print(f"Creating segmentation function \'{seg_tool}\'...", file=stderr)
     segment = get_segment_method(seg_tool)
     fl = f"data{os.sep}cstenten17_mj2.freqlist.cleaned.sorted_alpha.{seg_tool if seg_tool else 'character'}"
     if not os.path.exists(fl):
-        print(fl, ": file not found")
+        print(fl, ": file not found", file=stderr)
         return
-    start_letter = "a"
-    node = dbs.FreqTreeNode().feed(fl, "a")
+    start_letter = ""
+    node = dbs.FreqTreeNode()
     for line in source:
         segments = dbs.uppercase_format("=".join(segment(line.strip().lower())))
         if segments[0] != start_letter:
             start_letter = segments[0]
+            if debug:
+                print(f"Building suffix tree for prefix \'{start_letter}\'...", file=stderr)
             node = dbs.FreqTreeNode().feed(fl, start_letter)
-        scores = tree_guess_paradigm_from_corpus(segments, node, morph_db, only_lemmas)
-        dbs.print_scores(line.strip(), {par: score for score, par in scores[:min(5, len(scores))]})
+        if debug:
+            print(f"Word {line.strip()}, segmented as {'='.join(segment(line.strip().lower()))}:")
+        scores = tree_guess_paradigm_from_corpus(segments, node, morph_db, dbs.scoring_comm_square_spread, only_lemmas)
+        if not debug:
+            dbs.print_scores(line.strip(), {par: score for score, par in scores[:min(5, len(scores))]})
+        else:
+            if not scores:
+                print("\tNo paradigms guessed")
+            for score, par in scores[:min(5, len(scores))]:
+                lemma = morph_db.lemmatize(line.strip().lower(), par)
+                print(f"\t{par}: score {score}, lemma {lemma}, "
+                      f"forms {', '.join(morph_db.lemma_forms(lemma, par))}")
 
 
 if __name__ == "__main__":
@@ -84,11 +101,12 @@ if __name__ == "__main__":
                                                "otherwise stdin is used")
     parser.add_argument("-s", "--use-segmenter", default="character",
                         help="use segmentation for words (if not specified, not using any)")
+    parser.add_argument("-d", "--debug", action="store_true", help="verbose output", default=False)
     args = parser.parse_args()
 
     if not os.path.exists(f".{os.sep}temp"):
         os.mkdir(f".{os.sep}temp")
     src = sys.stdin if args.infile is None else open(args.infile, encoding="utf-8")
-    main(src, args.lemma, args.use_segmenter)
+    main(src, args.lemma, args.use_segmenter, args.debug)
     if args.infile is None:
         src.close()
