@@ -76,7 +76,7 @@ def md_check(log_file: str, crit: str, morph_db, threshold: int = 5) -> Tuple[in
             if "" in guesses:
                 guesses.remove("")
             guess_count += len(guesses)
-            if crit == "same_lemmas":
+            if crit == "same_lemma":
                 if guesses and morph_db.same_lemma(form, guesses[0], paradigm):
                     correct += 1
             elif guesses and morph_db.same_paradigms(guesses[0], paradigm, crit, threshold=threshold):
