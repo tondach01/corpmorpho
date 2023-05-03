@@ -41,6 +41,17 @@ class MorphDatabase:
             forms.add(root + suffix)
         return forms
 
+    def affixes(self, paradigm: str, only_formal: bool = False) -> Set[str]:
+        if paradigm not in self.paradigms.keys():
+            return set()
+        if not only_formal:
+            return set(self.paradigms[paradigm]["affixes"].keys())
+        suf = set()
+        for affix, tags in self.paradigms[paradigm]["affixes"].items():
+            if any(map(lambda x: "wH" not in x, tags)):
+                suf.add(affix)
+        return suf
+
     def word_root(self, lemma: str, paradigm: str) -> str:
         """Returns the morphological root (resp. prefixes+root) for given lemma"""
         # weird irregularity in current.dic

@@ -36,7 +36,7 @@ def segmented_tree_guess(freq_list: str, morph_db: md.MorphDatabase, segmenter: 
             for form in morph_db.lemma_forms(data[-2], data[-1]):
                 morph_db.paradigms[data[-1]]["spread"][
                     data[0][len(morph_db.word_root(data[-2], data[-1])):]] -= node[form]
-            scores = g.tree_guess_paradigm_from_corpus(segments, node, morph_db, dbs.scoring_comm_square_spread,
+            scores = g.tree_guess_paradigm_from_corpus(segments, node, morph_db, dbs.scoring_comm_square_spread_suf,
                                                        only_lemmas)
             print("\t" + ", ".join([par for _, par in scores]), file=log_file)
             for form in morph_db.lemma_forms(data[-2], data[-1]):
@@ -70,7 +70,7 @@ def substitus_segmented_tree_guess(morph_db: md.MorphDatabase, only_lemmas: bool
             for form in morph_db.lemma_forms(data[-2], data[-1]):
                 morph_db.paradigms[data[-1]]["spread"][
                     data[0][len(morph_db.word_root(data[-2], data[-1])):]] -= node[form]
-            scores = g.tree_guess_paradigm_from_corpus(segments, node, morph_db, dbs.scoring_comm_square_spread,
+            scores = g.tree_guess_paradigm_from_corpus(segments, node, morph_db, dbs.scoring_comm_square_spread_suf,
                                                        only_lemmas)
             print("\t" + ", ".join([par for _, par in scores]), file=log_file)
             for form in morph_db.lemma_forms(data[-2], data[-1]):

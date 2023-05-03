@@ -194,14 +194,14 @@ def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphData
     for paradigm, (common, prefix) in n_most_common.items():
         scores[paradigm] = scoring(common,
                                    normed[prefix],
-                                   normalize_spread(morph_db.paradigms[paradigm].get("spread", dict()))
+                                   normalize_spread(morph_db.paradigms[paradigm].get("spread", dict())),
+                                   (len(segments) - len(prefix))
                                    )
     return scores
 
 
-def scoring_comm_square_spread(common_forms: int, guess_normed: Dict[str, float], par_normed: Dict[str, float]):
-    # penalize lower-form paradigms
-    return common_forms - square_spread_difference(par_normed, guess_normed)
+def scoring_comm_square_spread_suf(common_forms: int, guess_normed: Dict[str, float], par_normed: Dict[str, float], len_suffix: int):
+    return ((len_suffix + 2) / (len_suffix + 1)) * (common_forms - square_spread_difference(par_normed, guess_normed))
 
 
 def square_spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> float:
@@ -218,7 +218,7 @@ def n_best_paradigms(word_suffixes: Set[str], morph_db: md.MorphDatabase, suffix
     n paradigms if they have the same score as the n-th one."""
     i_sizes = list()
     for paradigm, data in morph_db.paradigms.items():
-        par_affixes = set(data["affixes"].keys())
+        par_affixes = morph_db.affixes(paradigm)
         if suffix not in par_affixes:
             continue
         if only_lemmas and suffix != data["<suffix>"].split("_")[0]:
