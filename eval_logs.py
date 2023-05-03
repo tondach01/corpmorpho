@@ -58,7 +58,7 @@ def classic_eval(fltr: str = "", top_n: int = 1, debug: bool = False) -> None:
     for log_file in listdir("logs"):
         if fltr not in log_file:
             continue
-        correct, entries, guess_count = top_n_check(log_file, top_n)
+        correct, entries, guess_count = top_n_check(f"logs/{log_file}", top_n)
         print(f"{log_file}: {entries} examples, {round(guess_count, 3)} guesses at average", file=outfile)
         for i in range(len(correct)):
             print(f"\ttop_{i + 1}: {correct[i]} (precision {round(correct[i] / entries, 3)})", file=outfile)
