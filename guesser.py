@@ -6,7 +6,7 @@ from typing import List, TextIO, Tuple
 
 
 def tree_guess_paradigm_from_corpus(segments: str, tree: dbs.FreqTreeNode, morph_db: md.MorphDatabase, scoring,
-                                    only_lemmas: bool = False) -> List[Tuple[float, str]]:
+                                    only_lemmas: bool = False, only_formal: bool = False) -> List[Tuple[float, str]]:
     """Guesses paradigm of given word based on occurrences of similar words in given corpus and their spread.
     Returns sorted list of tuples (paradigm, score (greater the better))."""
     result = [(score, par) for par, score in dbs.tree_spread_scores(
@@ -14,7 +14,8 @@ def tree_guess_paradigm_from_corpus(segments: str, tree: dbs.FreqTreeNode, morph
         tree,
         morph_db,
         scoring=scoring,
-        only_lemmas=only_lemmas
+        only_lemmas=only_lemmas,
+        only_formal=only_formal
     ).items()
               ]
     result.sort(reverse=True)
@@ -80,7 +81,7 @@ def main(source: TextIO, only_lemmas: bool = False, seg_tool: str = "character",
             node = dbs.FreqTreeNode().feed(fl, start_letter)
         if debug:
             print(f"Word {line.strip()}, segmented as {'='.join(segment(line.strip().lower()))}:")
-        scores = tree_guess_paradigm_from_corpus(segments, node, morph_db, dbs.scoring_comm_square_spread, only_lemmas)
+        scores = tree_guess_paradigm_from_corpus(segments, node, morph_db, dbs.scoring_comm_square_spread_suf, only_lemmas)
         if not debug:
             dbs.print_scores(line.strip(), {par: score for score, par in scores[:min(5, len(scores))]})
         else:
