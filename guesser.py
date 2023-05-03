@@ -6,7 +6,7 @@ from typing import List, TextIO, Tuple
 
 
 def tree_guess_paradigm_from_corpus(segments: str, tree: dbs.FreqTreeNode, morph_db: md.MorphDatabase, scoring,
-                                    only_lemmas: bool = False, only_formal: bool = False) -> List[Tuple[float, str]]:
+                                    only_lemmas: bool = False) -> List[Tuple[float, str]]:
     """Guesses paradigm of given word based on occurrences of similar words in given corpus and their spread.
     Returns sorted list of tuples (paradigm, score (greater the better))."""
     result = [(score, par) for par, score in dbs.tree_spread_scores(
@@ -14,8 +14,7 @@ def tree_guess_paradigm_from_corpus(segments: str, tree: dbs.FreqTreeNode, morph
         tree,
         morph_db,
         scoring=scoring,
-        only_lemmas=only_lemmas,
-        only_formal=only_formal
+        only_lemmas=only_lemmas
     ).items()
               ]
     result.sort(reverse=True)
