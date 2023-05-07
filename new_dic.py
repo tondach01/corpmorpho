@@ -18,8 +18,7 @@ def line_to_include(data: List[str], morph_db: md.MorphDatabase) -> bool:
 
 def main():
     morph_db = md.MorphDatabase(DIC_FILE, PAR_FILE, freq_list=FREQ_LIST_FILTERED)
-    node = dbs.FreqTreeNode().feed(FREQ_LIST, "a")
-    start_letter = "a"
+    start_letter = ""
     with open(FREQ_LIST, encoding="utf-8") as fl:
         for line in fl:
             data = line.strip().split()
@@ -29,8 +28,8 @@ def main():
             if segments[0] != start_letter:
                 start_letter = segments[0]
                 node = dbs.FreqTreeNode().feed(FREQ_LIST, start_letter)
-            scores = g.tree_guess_paradigm_from_corpus(segments, node, morph_db, only_lemmas=True)
-            if scores[0][0] > 5:
+            scores = g.tree_guess_paradigm_from_corpus(segments, node, morph_db, dbs.scoring_comm_square_spread_suf, only_lemmas=False)
+            if scores[0][0] > 5 and morph_db.lemmatize(segments.lower(), scores[0][1]) == segments.lower():
                 dbs.print_scores(data[1], {par: score for score, par in scores[:min(5, len(scores))]})
 
 
