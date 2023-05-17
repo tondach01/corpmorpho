@@ -21,6 +21,7 @@ class MorphDatabase:
             self.form_spread(freq_list)
 
     def form_present(self, word: str) -> bool:
+        """Checks whether given word form is present in database."""
         for (lemma, paradigm) in self.vocab:
             if self.paradigms[paradigm]["<suffix>"] != paradigm and word[0] != lemma[0].lower():
                 continue
@@ -37,6 +38,7 @@ class MorphDatabase:
         return forms
 
     def affixes(self, paradigm: str, only_formal: bool = False) -> Set[str]:
+        """Returns set of all affixes for given paradigm."""
         if paradigm not in self.paradigms.keys():
             return set()
         if not only_formal:
@@ -83,19 +85,22 @@ class MorphDatabase:
                     += int(values[3])
 
     def all_suffixes(self) -> Set[str]:
+        """Returns set of all suffixes present in database."""
         found = set()
         for data in self.paradigms.values():
             found |= data["affixes"].keys()
         return found
 
     def dic_file_all_forms(self, dic_file: str) -> None:
+        """Creates a file with all forms present in database."""
         outfile = open(f"{dic_file}.forms", "w", encoding="utf-8")
         for word, paradigm in self.vocab:
             for form in self.lemma_forms(word, paradigm):
                 print(f"{form}:{word}:{paradigm}", file=outfile)
         outfile.close()
 
-    def same_paradigms(self, this: str, other: str, criterion: str, threshold: int = -1) -> bool:
+    def paradigm_comp(self, this: str, other: str, criterion: str, threshold: int = -1) -> bool:
+        """Checks whether two paradigms conform to given criterion."""
         if this not in self.paradigms.keys() or other not in self.paradigms.keys():
             return False
         if criterion == "same_paradigms":
@@ -114,11 +119,13 @@ class MorphDatabase:
                                                   == other_tag[other_tag.index("g") + 1]))
 
     def same_lemma(self, word: str, this: str, other: str) -> bool:
+        """Check whether two paradigms lemmatize given word the same."""
         if this not in self.paradigms.keys() or other not in self.paradigms.keys():
             return False
         return self.lemmatize(word, this) == self.lemmatize(word, other)
 
     def lemmatize(self, form: str, paradigm: str, prefix: str = "") -> str:
+        """Returns base form of a word with respect to given paradigm."""
         if prefix:
             return prefix + self.paradigms[paradigm]["<suffix>"].split("_")[0]
         longest_suffix = ""

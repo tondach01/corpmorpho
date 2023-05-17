@@ -1,6 +1,4 @@
 """This file contains tools for handling queries on corpora."""
-import sys
-
 import morph_database as md
 from typing import Dict, List, Set, Tuple
 from sys import stdout
@@ -80,6 +78,7 @@ def uppercase_format(segmentation: str):
 
 
 def clean_freqlist(freq_list: str) -> None:
+    """Removes noisy lines from given word list."""
     import re
     cleaned = open(freq_list + ".cleaned", "w", encoding="utf-8")
     with open(freq_list, encoding="utf-8") as fl:
@@ -124,6 +123,7 @@ def filter_freqlist(freq_list: str, all_forms: str) -> None:
 
 
 def str_gt(this: str, other: str) -> bool:
+    """Compares two strings. Returns this >= other with respect to Unicode order."""
     if this == other:
         return False
     for i in range(min(len(this), len(other))):
@@ -160,17 +160,6 @@ def normalize_spread(spread: Dict[str, float]) -> Dict[str, float]:
     return {suf: freq / norm for (suf, freq) in spread.items()}
 
 
-def spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> float:
-    """Computes difference of normalized spreads of given paradigm and word."""
-    diff = 0
-    for suf, freq in paradigm.items():
-        diff += abs(freq - word.get(suf, 0.0))
-    # for suf, freq in word.items():
-    #     if suf not in paradigm.keys():
-    #         diff += freq
-    return diff  # / (1 if len(paradigm) == 0 else len(paradigm))
-
-
 def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphDatabase, scoring,
                        only_lemmas: bool = False) -> Dict[str, float]:
     """Computes paradigm scores for given word based on its forms spread."""
@@ -204,10 +193,12 @@ def tree_spread_scores(segments: str, tree: FreqTreeNode, morph_db: md.MorphData
 
 
 def scoring_comm_square_spread_suf(common_forms: int, guess_normed: Dict[str, float], par_normed: Dict[str, float], len_suffix: int):
+    """Returns score of a paradigm based on its similarity to given word."""
     return ((len_suffix + 2) / (len_suffix + 1)) * (common_forms - square_spread_difference(par_normed, guess_normed))
 
 
 def square_spread_difference(paradigm: Dict[str, float], word: Dict[str, float]) -> float:
+    """Computes the difference between relative spreads of a word and paradigm."""
     from math import pow
     diff = 0
     for suf, freq in paradigm.items():
@@ -249,6 +240,7 @@ def segment_freq_list(freq_list: str, seg_method, suffix: str) -> None:
 
 
 def test_forms(file: str = "data/current.dic.cleaned.utf8.sorted.forms", ratio: int = 50) -> None:
+    """Filters part of word forms from given file as test set."""
     out = open(file + ".filtered", "w", encoding="utf-8")
     with open(file, encoding="utf-8") as f:
         i = 0
@@ -259,8 +251,8 @@ def test_forms(file: str = "data/current.dic.cleaned.utf8.sorted.forms", ratio: 
     out.close()
 
 
-def print_scores(word: str, scores: Dict[str, float], outfile=sys.stdout) -> None:
-    """Prints paradigms in descending order (by their frequency scores)"""
+def print_scores(word: str, scores: Dict[str, float], outfile=stdout) -> None:
+    """Prints paradigms in descending order (by their frequency scores)."""
     print(word + ":", end="")
     for paradigm, score in scores.items():
         print(f" {paradigm} ({score})", end="", file=outfile)

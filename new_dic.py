@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""This file serves for creating the new.dic file."""
 import morph_database as md
 import guesser as g
 import db_stats as dbs
@@ -12,6 +13,8 @@ FREQ_LIST_FILTERED = "data/cstenten17_mj2.freqlist.cleaned.sorted_alpha.filtered
 
 
 def line_to_include(data: List[str], morph_db: md.MorphDatabase) -> bool:
+    """Checks whether the parsed line from corpus should be considered relevant for
+    paradigm guessing."""
     return int(data[2]) > 100 and re.search("(.)\\1\\1", data[1]) is None and not morph_db.form_present(data[1])
 
 

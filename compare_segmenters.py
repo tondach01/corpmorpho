@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
+"""This script serves for computing precision of paradigm determining when using
+some of supported (SentencePiece, Morfessor, Substitus, HFT) segmentation tools."""
 import sys
-
 import morph_database as md
 import guesser as g
 import db_stats as dbs
@@ -14,6 +15,7 @@ def character_guess(corpus: str, morph_db: md.MorphDatabase) -> None:
 
 def segmented_tree_guess(freq_list: str, morph_db: md.MorphDatabase, segmenter: str = "", only_lemmas: bool = False,
                          debug: bool = False) -> None:
+    """For given tool, guesses paradigms for all entries in test set."""
     if debug:
         log_file = sys.stdout
     else:
@@ -47,6 +49,7 @@ def segmented_tree_guess(freq_list: str, morph_db: md.MorphDatabase, segmenter: 
 
 
 def substitus_segmented_tree_guess(morph_db: md.MorphDatabase, only_lemmas: bool = False, debug: bool = False) -> None:
+    """Guesses paradigms for all entries in test set, modified for Substitus."""
     freq_list = f"data{sep}cstenten17_mj2.freqlist.cleaned.sorted_alpha.substitus"
     if debug:
         log_file = sys.stdout

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""This file contains tools for evaluating test logs with multiple metrics."""
 from typing import Tuple, List
 from os import listdir
 from sys import stdout
@@ -6,8 +7,8 @@ import morph_database as md
 
 
 def top_n_check(log_file: str, top_n: int = 1) -> Tuple[List[int], int, int]:
-    """Reads the given log file and evaluates its precision in 1 to <top_n> guesses.
-    Returns (correct, all, total guesses)"""
+    """Reads the given log file and evaluates its same_paradigm precision in
+    1 to <top_n> guesses. Returns (correct, all, total guesses)."""
     correct = [0 for _ in range(top_n)]
     entries, guess_count = 0, 0
     with open(log_file, encoding="utf-8") as log:
@@ -29,6 +30,7 @@ def top_n_check(log_file: str, top_n: int = 1) -> Tuple[List[int], int, int]:
 
 
 def full_eval(fltr: str = "", top_n: int = 1, threshold: int = 5, debug: bool = False) -> None:
+    """Evaluates all log files with all metrics."""
     morph_db = md.MorphDatabase("data/current.dic", "data/current.par")
     outfile = stdout
     if not debug:
@@ -51,6 +53,7 @@ def full_eval(fltr: str = "", top_n: int = 1, threshold: int = 5, debug: bool = 
 
 
 def classic_eval(fltr: str = "", top_n: int = 1, debug: bool = False) -> None:
+    """Evaluates all logs with same_paradigm metric."""
     outfile = stdout
     if not debug:
         import datetime
@@ -67,6 +70,8 @@ def classic_eval(fltr: str = "", top_n: int = 1, debug: bool = False) -> None:
 
 
 def md_eval(crit: str, fltr: str = "", threshold: int = 5, debug: bool = False) -> None:
+    """Evaluates all logs with given (one of same_affixes, same_lemma, common_forms,
+    common_tags) metric."""
     morph_db = md.MorphDatabase("data/current.dic", "data/current.par")
     outfile = stdout
     if not debug:
@@ -82,6 +87,8 @@ def md_eval(crit: str, fltr: str = "", threshold: int = 5, debug: bool = False) 
 
 
 def md_check(log_file: str, crit: str, morph_db, threshold: int = 5) -> Tuple[int, int, int]:
+    """Evaluates given log file with given (one of same_affixes, same_lemma, common_forms,
+    common_tags) metric."""
     correct = 0
     entries, guess_count = 0, 0
     with open(log_file, encoding="utf-8") as log:
@@ -97,7 +104,7 @@ def md_check(log_file: str, crit: str, morph_db, threshold: int = 5) -> Tuple[in
             if crit == "same_lemma":
                 if guesses and morph_db.same_lemma(form, guesses[0], paradigm):
                     correct += 1
-            elif guesses and morph_db.same_paradigms(guesses[0], paradigm, crit, threshold=threshold):
+            elif guesses and morph_db.paradigm_comp(guesses[0], paradigm, crit, threshold=threshold):
                 correct += 1
             line = log.readline()
     return correct, entries, guess_count

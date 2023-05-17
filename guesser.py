@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""This file contains tools for paradigm guessing."""
 import os
 import db_stats as dbs
 import morph_database as md
@@ -22,6 +23,7 @@ def tree_guess_paradigm_from_corpus(segments: str, tree: dbs.FreqTreeNode, morph
 
 
 def get_segment_method(seg_tool: str):
+    """Creates desired segmentation method."""
     character = (lambda x: list(c for c in x))
     if "sentencepiece" in seg_tool:
         import sentencepiece as sp
