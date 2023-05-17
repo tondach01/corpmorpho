@@ -55,7 +55,8 @@ Works for Substitus logs as well.
 
 ### How to test segmentator
   
-In terminal, run:
+- Create `logs` directory if such is not present
+- In terminal, run:
   ```
   python3 compare_segmenters.py [-l] [-d] -s segmentator_id
   ```
@@ -83,15 +84,13 @@ Works for Substitus logs as well.
 
 For running Substitus, you need to have Java installed and added to PATH (so the terminal can call `java -jar ...`). Then make sure that test files are present, or create them as stated [here](#testing).
 
-Download the [Substitus binary](https://is.muni.cz/auth/th/l3y56/substitus-20191210-thesis.jar) into `substitus` directory
-
-To segment all necessary files, run:
-```
-make substitus_sfwl substitus_segment_cstenten
-# for testing lemmas, run following afterwards
-make substitus_segment_test_lemmas
-# otherwise run
-make substitus_segment_test_forms
-```
-
-Then, you can continue to [testing](#testing) and use `substitus` as `segmentator_id`.
+- Download the [Substitus binary](https://is.muni.cz/auth/th/l3y56/substitus-20191210-thesis.jar) into `substitus` directory
+- To segment all necessary files, run:
+  ```
+  make substitus_sfwl substitus_segment_cstenten
+  # for testing lemmas, run following afterwards
+  make substitus_segment_test_lemmas
+  # otherwise run
+  make substitus_segment_test_forms
+  ```
+- Continue to [testing](#testing) and use `substitus` as `segmentator_id`.
