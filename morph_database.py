@@ -21,14 +21,9 @@ class MorphDatabase:
             self.form_spread(freq_list)
 
     def form_present(self, word: str) -> bool:
-        for paradigm, data in self.paradigms.items():
-            root = paradigm[:len(paradigm) - len(data["<suffix>"])].lower()
-            if not word.startswith(root):
-                continue
-            for suffix in data["affixes"].keys():
-                if word == (root + suffix):
-                    return True
         for (lemma, paradigm) in self.vocab:
+            if self.paradigms[paradigm]["<suffix>"] != paradigm and word[0] != lemma[0].lower():
+                continue
             if word in self.lemma_forms(lemma.lower(), paradigm):
                 return True
         return False

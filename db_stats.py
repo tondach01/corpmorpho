@@ -1,6 +1,9 @@
 """This file contains tools for handling queries on corpora."""
+import sys
+
 import morph_database as md
 from typing import Dict, List, Set, Tuple
+from sys import stdout
 
 
 class FreqTreeNode:
@@ -256,9 +259,9 @@ def test_forms(file: str = "data/current.dic.cleaned.utf8.sorted.forms", ratio: 
     out.close()
 
 
-def print_scores(word: str, scores: Dict[str, float]) -> None:
+def print_scores(word: str, scores: Dict[str, float], outfile=sys.stdout) -> None:
     """Prints paradigms in descending order (by their frequency scores)"""
     print(word + ":", end="")
     for paradigm, score in scores.items():
-        print(f" {paradigm} ({score})", end="")
-    print()
+        print(f" {paradigm} ({score})", end="", file=outfile)
+    print(file=outfile)
