@@ -1,18 +1,26 @@
-### How to test segmentator
+### Requirements
 
-#### Requirements
-
+- for correct work of the program, please respect described directory structure
 - `data/current.dic` and `data/current.par` files (owned by third party)
+  - these are present on server `aurora.fi.muni.cz` accessible only to members of Faculty of Informatics
+  of Masaryk University (FI MU), thus non-members have to gain the access with permission from the
+  server administrators and from the code owners
 - `data/cstenten17_mj2.freqlist` file (owned by third party)
+  - this word list was downloaded via `ske.fi.muni.cz`, service cooperatively operated by FI MU and
+  Lexical Computing, s.r.o. - for other interested persons a fee might be required to get the full
+  data. For more information, visit [SketchEngine](https://sketchengine.eu).
   - prepare all necessary files
     ```
     make sort_alpha filter_for_morph_db
     ```
-- `desam/desam` file (owned by third party) 
+- `desam/desam` file (owned by third party)
+  - this is present on server `aurora.fi.muni.cz` accessible only to members of Faculty of Informatics
+  of Masaryk University (FI MU), thus non-members have to gain the access with permission from the
+  server administrators and from the code owners
   -  create pre-vertically formatted corpus:
-  ```
-  make prevert_desam
-  ```
+    ```
+    make prevert_desam
+    ```
 - segmented *csTenTen* frequency list (if you want to test **Substitus**, continue [here](#substitus-testing) )
   - determine the `segmentator_id`:
     - `sentencepiece_{unigram, bpe}_{vocabulary size}`
@@ -24,7 +32,8 @@
     import db_stats
     import guesser
     m = guesser.get_segment_method(segmentator_id)
-    db_stats.segment_freq_list("data/cstenten17_mj2.freqlist.cleaned.sorted_alpha", m, segmentator_id) # this creates quite huge file and takes a lot of time
+    # this creates quite huge file and takes a lot of time
+    db_stats.segment_freq_list("data/cstenten17_mj2.freqlist.cleaned.sorted_alpha", m, segmentator_id)
     ```
     - if you want to use `hft`:
       - clone the [HFT repository](https://github.com/pary42/hftoks) to `hftok` directory
@@ -32,8 +41,19 @@
         ```
         make hftok_segment_cstenten
         ```
+
+### How to guess a paradigm
+
+To obtain most probable paradigm for word or whole text file of words, run:
+  ```
+  python3 guesser.py -h
+  ```
+
+and follow the instructions to customize script parameters.
   
-#### Testing
+Works for Substitus logs as well.
+
+### How to test segmentator
   
 In terminal, run:
   ```
@@ -52,8 +72,10 @@ In terminal, run:
 
 To summarize results from logs, run:
   ```
-  python3 eval_logs.py
+  python3 eval_logs.py -h
   ```
+
+and follow the instructions to customize script parameters and get the desired evaluation.
   
 Works for Substitus logs as well.
 
