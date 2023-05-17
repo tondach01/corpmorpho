@@ -208,3 +208,4 @@ def clean_dic_file(dic_file: str) -> None:
                 continue
             print(correct_encoding(line.strip().split("|")[0]), file=outfile)
     outfile.close()
+

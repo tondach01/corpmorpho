@@ -2,17 +2,18 @@
 
 #### Requirements
 
-- provided `Makefile`
-- `data/current.dic`, `data/current.par` and `data/cstenten17_mj2.freqlist.cleaned.sorted_alpha.filtered` files for creating a morphological database
-  - if the last one is not present, you can download it from [here](https://nlp.fi.muni.cz/projekty/corpmorpho/) or obtain by running
+- `data/current.dic` and `data/current.par` files (owned by third party)
+- `data/cstenten17_mj2.freqlist` file (owned by third party)
+  - prepare all necessary files
+    ```
+    make sort_alpha filter_for_morph_db
+    ```
+- `desam/desam` file (owned by third party) 
+  -  create pre-vertically formatted corpus:
   ```
-  # make sure data/cstenten17_mj2.freqlist.cleaned.sorted_alpha file is present
-  make filter_for_morph_db
+  make prevert_desam
   ```
-- `desam/desam` and `desam/prevert_desam` files for model training
 - segmented *csTenTen* frequency list (if you want to test **Substitus**, continue [here](#substitus-testing) )
-  - if you are at `aurora.fi.muni.cz`, connect to `apollo`, change directory to `\nlp\projekty\corpmorpho\git`, and run ```source init.sh```
-  - if `data/cstenten17_mj2.freqlist.cleaned.sorted_alpha` is not present, you can download it from [here](https://nlp.fi.muni.cz/projekty/corpmorpho/)
   - determine the `segmentator_id`:
     - `sentencepiece_{unigram, bpe}_{vocabulary size}`
     - `morfessor_{max epochs}`
@@ -25,10 +26,12 @@
     m = guesser.get_segment_method(segmentator_id)
     db_stats.segment_freq_list("data/cstenten17_mj2.freqlist.cleaned.sorted_alpha", m, segmentator_id) # this creates quite huge file and takes a lot of time
     ```
-    - if you want to use `hft`, instead run in terminal:
-      ```
-      make hftok_segment_cstenten
-      ```
+    - if you want to use `hft`:
+      - clone the [HFT repository](https://github.com/pary42/hftoks) to `hftok` directory
+      - run in terminal:
+        ```
+        make hftok_segment_cstenten
+        ```
   
 #### Testing
   
@@ -58,8 +61,9 @@ Works for Substitus logs as well.
 
 For running Substitus, you need to have Java installed and added to PATH (so the terminal can call `java -jar ...`). Then make sure that test files are present, or create them as stated [here](#testing).
 
-To segment all necessary files, run:
+Download the [Substitus binary](https://is.muni.cz/auth/th/l3y56/substitus-20191210-thesis.jar) into `substitus` directory
 
+To segment all necessary files, run:
 ```
 make substitus_sfwl substitus_segment_cstenten
 # for testing lemmas, run following afterwards

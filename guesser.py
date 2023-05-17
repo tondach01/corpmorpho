@@ -57,6 +57,28 @@ def get_segment_method(seg_tool: str):
     return character
 
 
+def prevert_desam():
+    import re
+    f = open("desam/desam", "r", encoding="utf-8")
+    out = open(f"desam/prevert_desam", "w", encoding="utf-8")
+    buf = ""
+    for line in f:
+        if line.startswith("<"):
+            if line.startswith("</"):
+                buf = re.sub(r"\s([.,;?!)])", r"\1", buf)
+                buf = re.sub(r"([(])\s", r"\1", buf)
+                print(buf.strip(), file=out)
+                out.write(line)
+                buf = ""
+            else:
+                out.write(line.split()[0].lstrip(">") + ">\n")
+            continue
+        word = line.split()[0]
+        buf += f" {word}"
+    out.close()
+    f.close()
+
+
 def main(source: TextIO, only_lemmas: bool = False, seg_tool: str = "character", debug: bool = False):
     from sys import stderr
     fl = "data/cstenten17_mj2.freqlist.cleaned.sorted_alpha"

@@ -1,5 +1,9 @@
 all: clean_freq_list sort_freq sort_alpha hftok_learn filter_for_morph_db
 
+# converting desam corpus to pre-vertical format
+prevert_desam:
+	echo "import guesser as g; g.prevert_desam();exit()" | python3
+
 # word list cleaning
 clean_freq_list:
 	echo "import db_stats as dbs; dbs.clean_freqlist('data/cstenten17_mj2.freqlist'); exit()" | python3
