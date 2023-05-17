@@ -60,14 +60,17 @@ Works for Substitus logs as well.
   ```
   python3 compare_segmenters.py [-l] [-d] -s segmentator_id
   ```
-  - the `-l` switch tests against `data/current.dic.cleaned.utf8.sorted` file containing just lemmas, otherwise `data/current.dic.cleaned.utf8.sorted.forms.filtered` will be used (Substitus uses its own test files which are similar, but already segmented)
+  - the `-l` switch tests against `data/current.dic.cleaned.utf8.sorted` file containing just lemmas,
+  otherwise `data/current.dic.cleaned.utf8.sorted.forms.filtered` will be used (Substitus uses its own
+  test files which are similar, but already segmented)
     - if these files are not present, run:
     ```
     make clean_dic_file
     # for obtaining also .forms.filtered file, run following afterwards
     make dic_file_all_forms
     ```
-  - the `-d` switch prints the paradigm guessing to standard output, otherwise `logs/log_{segmentator_id}_{lemmas, forms}` is created and written into
+  - the `-d` switch prints the paradigm guessing to standard output, otherwise
+  `logs/log_{segmentator_id}_{lemmas, forms}` is created and written into
 
 #### Summarizing results
 
@@ -82,9 +85,11 @@ Works for Substitus logs as well.
 
 #### Substitus testing
 
-For running Substitus, you need to have Java installed and added to PATH (so the terminal can call `java -jar ...`). Then make sure that test files are present, or create them as stated [here](#testing).
+For running Substitus, you need to have Java installed and added to PATH (so the terminal can call `java -jar ...`).
+Then make sure that test files are present, or create them as stated [here](#how-to-test-segmentator).
 
-- Download the [Substitus binary](https://is.muni.cz/auth/th/l3y56/substitus-20191210-thesis.jar) into `substitus` directory
+- Download the [Substitus binary](https://is.muni.cz/auth/th/l3y56/substitus-20191210-thesis.jar) into `substitus`
+directory
 - To segment all necessary files, run:
   ```
   make substitus_sfwl substitus_segment_cstenten
@@ -93,4 +98,4 @@ For running Substitus, you need to have Java installed and added to PATH (so the
   # otherwise run
   make substitus_segment_test_forms
   ```
-- Continue to [testing](#testing) and use `substitus` as `segmentator_id`.
+- Continue to [testing](#how-to-test-segmentator) and use `substitus` as `segmentator_id`.
